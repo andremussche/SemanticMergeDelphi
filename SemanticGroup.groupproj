@@ -1,0 +1,48 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{2EFBC630-7B1D-4EEF-9B49-F9C921A52058}</ProjectGuid>
+		</PropertyGroup>
+		<ItemGroup>
+			<Projects Include="GuiTest.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="pas2yaml.dproj">
+				<Dependencies/>
+			</Projects>
+		</ItemGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Default.Personality.12</Borland.Personality>
+			<Borland.ProjectType/>
+			<BorlandProject>
+				<Default.Personality/>
+			</BorlandProject>
+		</ProjectExtensions>
+		<Target Name="GuiTest">
+			<MSBuild Projects="GuiTest.dproj"/>
+		</Target>
+		<Target Name="GuiTest:Clean">
+			<MSBuild Targets="Clean" Projects="GuiTest.dproj"/>
+		</Target>
+		<Target Name="GuiTest:Make">
+			<MSBuild Targets="Make" Projects="GuiTest.dproj"/>
+		</Target>
+		<Target Name="pas2yaml">
+			<MSBuild Projects="pas2yaml.dproj"/>
+		</Target>
+		<Target Name="pas2yaml:Clean">
+			<MSBuild Targets="Clean" Projects="pas2yaml.dproj"/>
+		</Target>
+		<Target Name="pas2yaml:Make">
+			<MSBuild Targets="Make" Projects="pas2yaml.dproj"/>
+		</Target>
+		<Target Name="Build">
+			<CallTarget Targets="GuiTest;pas2yaml"/>
+		</Target>
+		<Target Name="Clean">
+			<CallTarget Targets="GuiTest:Clean;pas2yaml:Clean"/>
+		</Target>
+		<Target Name="Make">
+			<CallTarget Targets="GuiTest:Make;pas2yaml:Make"/>
+		</Target>
+		<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+	</Project>
