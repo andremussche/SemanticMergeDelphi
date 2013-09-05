@@ -2,6 +2,13 @@ program pas2yaml;
 
 {$APPTYPE CONSOLE}
 
+//tip: for testing, use these params (simulation without shell)
+//  pas2yaml.exe test.flag ./test/src.pas ./test/result.pas
+//or, with shell mode:
+//  pas2yaml.exe shell test.flag
+//and enter the following line in the commandline:
+//  ./test/src.pas ./test/result.pas
+
 uses
   Classes, SysUtils, IOUtils,
   PasToYamlParser;
@@ -18,6 +25,8 @@ var
 begin
   try
     bShell := False;
+    sFileToParse := '';
+    sOutputFile  := '';
     // there are two arguments to consider:
     // 1) "shell" saying you must run in "shell mode"
     //    - don't exit basically and wait for commands
@@ -74,8 +83,6 @@ begin
       TFile.AppendAllText('debug.log', 'Received line: ' + sLine +#13);
       while sLine <> 'end' do
       begin
-        sFileToParse := '';
-        sOutputFile  := '';
         with TStringList.Create do
         begin
           Delimiter     := ' ';
@@ -119,11 +126,14 @@ begin
         strYaml.Clear;
         // write OK when you're done or KO if it didn't work
         WriteLn('OK');
+        Flush(Output);  //important!
 
         if not bShell then Break;
         Readln(sLine);
         //debug:
         TFile.AppendAllText('debug.log', 'Received line: ' + sLine +#13);
+        sFileToParse := '';
+        sOutputFile  := '';
       end;
     finally
       strYaml.Free;
@@ -139,6 +149,7 @@ begin
 
       WriteLn('KO');
       Writeln(E.ClassName, ': ', E.Message);
+      Flush(Output);  //important!
     end;
   end;
 end.
