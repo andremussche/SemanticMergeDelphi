@@ -1,4 +1,4 @@
-unit Unit2;
+unit MainForm;
 
 interface
 
@@ -7,7 +7,7 @@ uses
   Dialogs, StdCtrls;
 
 type
-  TForm2 = class(TForm)
+  TfrmMain = class(TForm)
     mmoSource: TMemo;
     Button1: TButton;
     mmoResult: TMemo;
@@ -19,7 +19,7 @@ type
   end;
 
 var
-  Form2: TForm2;
+  frmMain: TfrmMain;
 
 implementation
 
@@ -28,7 +28,7 @@ uses
 
 {$R *.dfm}
 
-procedure TForm2.Button1Click(Sender: TObject);
+procedure TfrmMain.Button1Click(Sender: TObject);
 var
   parser: TPas2YamlParser;
   strm: TMemoryStream;

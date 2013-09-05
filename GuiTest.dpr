@@ -2,8 +2,8 @@ program GuiTest;
 
 uses
   Forms,
-  Unit2 in 'Unit2.pas' {Form2},
-  Unit1 in 'Unit1.pas',
+  MainForm in 'MainForm.pas' {frmMain},
+  TestFile in 'TestFile.pas',
   PasToYamlParser in 'PasToYamlParser.pas';
 
 {$R *.res}
@@ -11,6 +11,6 @@ uses
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TForm2, Form2);
+  Application.CreateForm(TfrmMain, frmMain);
   Application.Run;
 end.
