@@ -25,4 +25,4 @@ set mergeOptions=%contributorFiles%%resultFile% %externalparser% %difftool%%merg
 
 ::  ..\..\..\semanticmergetool.exe -s=src.cs -b=base.cs -d=dst.cs -r=semanticmergetoolresult.cs -emt="..\..\..\mergetool.exe -b=""@basefile"" -bn=""@basesymbolic"" -s=""@sourcefile"" -sn=""@sourcesymbolic"" -d=""@destinationfile"" -dn=""@destinationsymbolic"" -r=""@output"" -t=""@filetype"" -i=""@comparationmethod"" -e=""@fileencoding""" -edt="..\..\..\mergetool.exe  -s=""@sourcefile"" -sn=""@sourcesymbolic"" -d=""@destinationfile"" -dn=""@destinationsymbolic"" -t=""@filetype"" -i=""@comparationmethod"" -e=""@fileencoding"""
 
-pause
+#pause

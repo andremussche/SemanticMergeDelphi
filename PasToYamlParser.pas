@@ -29,6 +29,7 @@ type
     FCurrentParent: TSemanticParentYaml;
     FPrevItem,
     FCurrentItem: TSemanticItemYaml;
+    FPrevSpan: TSemanticSpan;
     function  GetYaml: TSemanticMasterYaml;
     procedure UpdatePrevYamlLocation(aNode: TBaseSemanticYaml);
     procedure UpdateNextYamlLocation(aNode: TBaseSemanticYaml);
@@ -558,6 +559,8 @@ begin
   classyaml.locationSpan.end_.b  := Length(Lexer.Line);
   classyaml.footerSpan.a  := Lexer.LinePos;
   classyaml.footerSpan.b  := Lexer.LinePos + Length(Lexer.Line);
+
+  FPrevSpan := classyaml.footerSpan;
 end;
 
 procedure TPas2YamlParser.ClassTypeEnd;
@@ -1053,6 +1056,7 @@ begin
   ExitHandler('FunctionProcedureBlock');
 
   FCurrentItem := nil;
+  FPrevSpan := procyaml.span;
 
   //here we are a token too far, so we set end of block in "procedure TPas2YamlParser.Block;"
 //  procyaml.locationSpan.end_.a  := Lexer.LineNumber+1;
@@ -1124,8 +1128,20 @@ begin
 
   implyaml.locationSpan.end_.a  := Lexer.LineNumber+1;
   implyaml.locationSpan.end_.b  := Length(Lexer.Line);
-  implyaml.footerSpan.a  := Lexer.LinePos;
-  implyaml.footerSpan.b  := Lexer.LinePos + Length(Lexer.Line);
+
+  //include last empty span in footer!  -> no, include in last method implementation
+  //if FPrevItem <> nil then
+  //  implyaml.footerSpan.a  := FPrevItem.span.b+1
+  //else if FPrevParent <> nil then
+  //  implyaml.footerSpan.a  := FPrevParent.footerSpan.b+1;
+  //include last empty line in previous footer
+  if FPrevSpan <> nil then
+    FPrevSpan.b := Lexer.LinePos-1;
+
+  implyaml.footerSpan.a    := Lexer.LinePos;
+  implyaml.footerSpan.b    := Lexer.LinePos + Length(Lexer.Line);
+
+  FPrevSpan := implyaml.footerSpan;
 end;
 
 procedure TPas2YamlParser.IncludeFile;
@@ -1225,9 +1241,6 @@ begin
   intyaml.headerSpan.a  := Lexer.LinePos;
   intyaml.headerSpan.b  := Lexer.LinePos + Length(Lexer.Line);
 
-//  FLastLine     := Lexer.LineNumber+1;
-//  FLastLineChar := Length(Lexer.Line);
-//  FLastChar     := Lexer.LinePos + Length(Lexer.Line);
   UpdatePrevYamlLocation(intyaml);
 
   FCurrentParent := intyaml;
@@ -1237,12 +1250,18 @@ begin
   FCurrentParent := intyaml;
 
   intyaml.locationSpan.end_.a  := Lexer.LineNumber+1;
-  intyaml.locationSpan.end_.b  := 0; //-1 //Length(Lexer.Line);  implementation?
-  //intyaml.footerSpan.a  := Lexer.LinePos;
-  //intyaml.footerSpan.b  := Lexer.LinePos + Length(Lexer.Line);
+  intyaml.locationSpan.end_.b  := -1; //-1 //Length(Lexer.Line);  implementation?
   //no footer?
-  intyaml.footerSpan.a  := 0;
-  intyaml.footerSpan.b  := -1;
+  //intyaml.footerSpan.a  := 0;
+  //intyaml.footerSpan.b  := -1;
+
+  //include last empty line in footer! (e.g. from "class" footerspan)
+  if FPrevSpan <> nil then
+    intyaml.footerSpan.a := FPrevSpan.b+1
+  else
+    intyaml.footerSpan.a := Lexer.LinePos;
+  intyaml.footerSpan.b  := Lexer.LinePos-1;
+  FPrevSpan := intyaml.footerSpan;
 end;
 
 procedure TPas2YamlParser.InterfaceType;
@@ -1623,6 +1642,8 @@ begin
   procyaml.locationSpan.end_.b  := Length(Lexer.Line);
   procyaml.span.a  := Lexer.LinePos;
   procyaml.span.b  := Lexer.LinePos + Length(Lexer.Line);
+
+  FPrevSpan := procyaml.span;
 end;
 
 procedure TPas2YamlParser.ProgramBlock;
@@ -2121,12 +2142,14 @@ begin
   FCurrentParent := typeyaml;
 
   typeyaml.locationSpan.end_.a  := Lexer.LineNumber+1;
-  typeyaml.locationSpan.end_.b  := 0; //-1; //Length(Lexer.Line);  "implementation"
+  typeyaml.locationSpan.end_.b  := -1; //-1; //Length(Lexer.Line);  "implementation"
   //typeyaml.footerSpan.a  := Lexer.LinePos;
-  //typeyaml.footerSpan.b  := Lexer.LinePos + Length(Lexer.Line);
+  //typeyaml.footerSpan.b  := Lexer.LinePos; // + Length(Lexer.Line);
   //no footer?
   typeyaml.footerSpan.a  := 0;
   typeyaml.footerSpan.b  := -1;
+  //no footer, then keep last known span
+  //FPrevSpan := classyaml.footerSpan;
 end;
 
 procedure TPas2YamlParser.UnitFile;
