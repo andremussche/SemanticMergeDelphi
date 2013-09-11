@@ -46,17 +46,18 @@ begin
     begin
       mmoResult.Lines.Add(aLine);
     end;
-  parser.OnYamlOutput    :=
-    procedure(const aLine: string)
-    begin
-      mmoOutput.Lines.Add(aLine);
-    end;
-  parser.OnReplaceOutput :=
-    procedure(const aSearch, aReplace: string)
-    begin
-      mmoOutput.Lines.Text := StringReplace(mmoOutput.Lines.Text, aSearch, aReplace, [rfReplaceAll]);
-    end;
+//  parser.OnYamlOutput    :=
+//    procedure(const aLine: string)
+//    begin
+//      mmoOutput.Lines.Add(aLine);
+//    end;
+//  parser.OnReplaceOutput :=
+//    procedure(const aSearch, aReplace: string)
+//    begin
+//      mmoOutput.Lines.Text := StringReplace(mmoOutput.Lines.Text, aSearch, aReplace, [rfReplaceAll]);
+//    end;
   parser.Run('test', strm);
+  mmoOutput.Lines.Text := parser.Yaml.Generate('');
 end;
 
 

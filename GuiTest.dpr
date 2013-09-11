@@ -4,7 +4,8 @@ uses
   Forms,
   MainForm in 'MainForm.pas' {frmMain},
   TestFile in 'TestFile.pas',
-  PasToYamlParser in 'PasToYamlParser.pas';
+  PasToYamlParser in 'PasToYamlParser.pas',
+  SemanticYaml in 'SemanticYaml.pas';
 
 {$R *.res}
 

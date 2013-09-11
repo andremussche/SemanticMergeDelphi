@@ -5732,6 +5732,10 @@ begin
         begin
           VarSection;
         end;
+      ptInterface:
+         InterfaceSection;
+      ptImplementation:
+         ImplementationSection;
     else
       begin
         NextToken;

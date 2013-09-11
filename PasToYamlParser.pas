@@ -4,7 +4,7 @@ interface
 
 uses
   Classes,
-  CastaliaSimplePasPar;
+  CastaliaSimplePasPar, SemanticYaml;
 
 type
   TStringEvent  = reference to procedure(const aText: string);
@@ -18,20 +18,25 @@ type
   protected
     FUnitName: string;
     FCurrentType: string;
-    FOutputIndent: string;
-    procedure WriteOutput(const aLine: string);overload;
-    procedure WriteOutput(const aLine: string; const Args: array of const);overload;
-    procedure ReplaceOutput(const aSearch, aReplace: string);
+    FObjectNameOfMethod: string;
+    FFunctionProcedureName: string;
+    //FLastLine, FLastLineChar, FLastChar: Integer;
   private
-    FOnYamlOutput: TStringEvent;
     FOnDebugOutput: TStringEvent;
-    FOnReplaceOutput: TReplaceEvent;
+
+    FYamlMaster: TSemanticMasterYaml;
+    FPrevParent,
+    FCurrentParent: TSemanticParentYaml;
+    FPrevItem,
+    FCurrentItem: TSemanticItemYaml;
+    function  GetYaml: TSemanticMasterYaml;
+    procedure UpdatePrevYamlLocation(aNode: TBaseSemanticYaml);
+    procedure UpdateNextYamlLocation(aNode: TBaseSemanticYaml);
   public
     procedure Run(aUnitName: string; SourceStream: TCustomMemoryStream); override;
 
+    property  Yaml: TSemanticMasterYaml read GetYaml;
     property  OnDebugOutput: TStringEvent read FOnDebugOutput write FOnDebugOutput;
-    property  OnYamlOutput : TStringEvent read FOnYamlOutput write  FOnYamlOutput;
-    property  OnReplaceOutput: TReplaceEvent read FOnReplaceOutput write FOnReplaceOutput;
   protected {parser overrides, long list!}
     (*
     procedure Expected(Sym: TptTokenKind); overide;
@@ -392,6 +397,14 @@ begin
   EnterHandler('Block');
   inherited;
   ExitHandler('Block');
+
+  //end of a procedure implementation block
+  if FCurrentItem <> nil then
+  begin
+    FCurrentItem.locationSpan.end_.a := Lexer.LineNumber+1;
+    FCurrentItem.locationSpan.end_.b := Length(Lexer.Line);
+    FCurrentItem.span.b := Lexer.LinePos + Length(Lexer.Line);
+  end;
 end;
 
 procedure TPas2YamlParser.CaseLabel;
@@ -514,30 +527,37 @@ begin
 end;
 
 procedure TPas2YamlParser.ClassType;
+var classyaml: TSemanticParentYaml;
 begin
-//  - type : class
-//    name : PlasticVisitor
-//    locationSpan : {start: [7,0], end: [52,0]}
-//    headerSpan : [151, 202]
-//    footerSpan : [1751, 1751]
-//    children :
-  WriteOutput('- type : class');
-  WriteOutput('  name : %s', [FCurrentType]);
-  WriteOutput('  locationSpan : {start: [%d,%d], end: [&classposendline&,&classposendchar&]}', [Lexer.LineNumber, 0]);
-  WriteOutput('  headerSpan : [%d,%d]', [Lexer.LinePos, Lexer.LinePos + Length(Lexer.Line)]);
-  WriteOutput('  footerSpan : [&classfooterspan&]', []);
-  WriteOutput('  children :');
-  WriteOutput('');
-  FOutputIndent := FOutputIndent + '  ';
+  (*
+  - type : class
+    name : TTest
+    locationSpan : {start: [6,0], end: [9,0]}
+    headerSpan : [34, 59]
+    footerSpan : [81, 88]
+    children :
+  *)
+  classyaml := FCurrentParent.children.AddNewParent;
+  classyaml.type_ := 'class';
+  classyaml.name  := FCurrentType;
+  classyaml.locationSpan.start.a := Lexer.LineNumber+1;
+  classyaml.locationSpan.start.b := 0;
+  classyaml.headerSpan.a  := Lexer.LinePos;
+  classyaml.headerSpan.b  := Lexer.LinePos + Length(Lexer.Line);
 
+  //UpdatePrevYamlLocation(classyaml);
+  UpdateNextYamlLocation(classyaml);
+
+  FCurrentParent := classyaml;
   EnterHandler('ClassType');
   inherited;
   ExitHandler('ClassType');
+  FCurrentParent := classyaml;
 
-  FOutputIndent := Copy(FOutputIndent, 1, Length(FOutputIndent)-2);
-  ReplaceOutput('&classposendline&', IntToStr(Lexer.LineNumber));
-  ReplaceOutput('&classposendchar&', IntToStr(Length(Lexer.Line)));
-  ReplaceOutput('&classfooterspan&', IntToStr(Lexer.RunPos) + ',' + IntToStr(Lexer.RunPos));
+  classyaml.locationSpan.end_.a  := Lexer.LineNumber+1;
+  classyaml.locationSpan.end_.b  := Length(Lexer.Line);
+  classyaml.footerSpan.a  := Lexer.LinePos;
+  classyaml.footerSpan.b  := Lexer.LinePos + Length(Lexer.Line);
 end;
 
 procedure TPas2YamlParser.ClassTypeEnd;
@@ -1010,17 +1030,48 @@ begin
 end;
 
 procedure TPas2YamlParser.FunctionProcedureBlock;
+var procyaml: TSemanticItemYaml;
 begin
+(*
+      - type : procedure
+        name : TTest.Test
+        locationSpan : {start: [11,0], end: [18,0]}
+        span : [107, 163]
+*)
+  procyaml := FCurrentParent.children.AddNewItem;
+  procyaml.type_ := 'method implementation';
+  procyaml.name  := FObjectNameOfMethod + '.' + FFunctionProcedureName;
+  procyaml.locationSpan.start.a := Lexer.LineNumber+1;
+  procyaml.locationSpan.start.b := 0;
+  procyaml.span.a := Lexer.LinePos;
+
+  FCurrentItem := procyaml;
+  UpdatePrevYamlLocation(procyaml);
+
   EnterHandler('FunctionProcedureBlock');
   inherited;
   ExitHandler('FunctionProcedureBlock');
+
+  FCurrentItem := nil;
+
+  //here we are a token too far, so we set end of block in "procedure TPas2YamlParser.Block;"
+//  procyaml.locationSpan.end_.a  := Lexer.LineNumber+1;
+//  procyaml.locationSpan.end_.b  := Length(Lexer.Line);
+//  procyaml.span.b  := Lexer.LinePos + Length(Lexer.Line);
 end;
 
 procedure TPas2YamlParser.FunctionProcedureName;
 begin
+  FFunctionProcedureName := Lexer.Token;
+
   EnterHandler('FunctionProcedureName');
   inherited;
   ExitHandler('FunctionProcedureName');
+end;
+
+function TPas2YamlParser.GetYaml: TSemanticMasterYaml;
+begin
+  Result := FYamlMaster;
 end;
 
 procedure TPas2YamlParser.Identifier;
@@ -1045,10 +1096,36 @@ begin
 end;
 
 procedure TPas2YamlParser.ImplementationSection;
+var implyaml: TSemanticParentYaml;
 begin
+  (*
+  - type : implementation
+    name : implementation
+    locationSpan : {start: [9,0], end: [19,4]}
+    headerSpan : [89, 106]
+    footerSpan : [164, 169]   //todo
+    children :
+  *)
+  implyaml := FYamlMaster.children.AddNewParent;
+  implyaml.type_ := 'implementation';
+  implyaml.name  := Lexer.Token;
+  implyaml.locationSpan.start.a := Lexer.LineNumber+1;
+  implyaml.locationSpan.start.b := 0;
+  implyaml.headerSpan.a  := Lexer.LinePos;
+  implyaml.headerSpan.b  := Lexer.LinePos + Length(Lexer.Line);
+
+  UpdatePrevYamlLocation(implyaml);
+
+  FCurrentParent := implyaml;
   EnterHandler('ImplementationSection');
   inherited;
   ExitHandler('ImplementationSection');
+  FCurrentParent := implyaml;
+
+  implyaml.locationSpan.end_.a  := Lexer.LineNumber+1;
+  implyaml.locationSpan.end_.b  := Length(Lexer.Line);
+  implyaml.footerSpan.a  := Lexer.LinePos;
+  implyaml.footerSpan.b  := Lexer.LinePos + Length(Lexer.Line);
 end;
 
 procedure TPas2YamlParser.IncludeFile;
@@ -1129,10 +1206,43 @@ begin
 end;
 
 procedure TPas2YamlParser.InterfaceSection;
+var
+  intyaml: TSemanticParentYaml;
 begin
+  (*
+  - type : interface
+    name : interface
+    locationSpan : {start: [2,0], end: [9,0]}
+    headerSpan : [13, 25]
+    footerSpan : [0, -1]
+    children :
+  *)
+  intyaml := FYamlMaster.children.AddNewParent;
+  intyaml.type_ := 'interface';
+  intyaml.name  := Lexer.Token;
+  intyaml.locationSpan.start.a := Lexer.LineNumber+1;
+  intyaml.locationSpan.start.b := 0;
+  intyaml.headerSpan.a  := Lexer.LinePos;
+  intyaml.headerSpan.b  := Lexer.LinePos + Length(Lexer.Line);
+
+//  FLastLine     := Lexer.LineNumber+1;
+//  FLastLineChar := Length(Lexer.Line);
+//  FLastChar     := Lexer.LinePos + Length(Lexer.Line);
+  UpdatePrevYamlLocation(intyaml);
+
+  FCurrentParent := intyaml;
   EnterHandler('InterfaceSection');
   inherited;
   ExitHandler('InterfaceSection');
+  FCurrentParent := intyaml;
+
+  intyaml.locationSpan.end_.a  := Lexer.LineNumber+1;
+  intyaml.locationSpan.end_.b  := 0; //-1 //Length(Lexer.Line);  implementation?
+  //intyaml.footerSpan.a  := Lexer.LinePos;
+  //intyaml.footerSpan.b  := Lexer.LinePos + Length(Lexer.Line);
+  //no footer?
+  intyaml.footerSpan.a  := 0;
+  intyaml.footerSpan.b  := -1;
 end;
 
 procedure TPas2YamlParser.InterfaceType;
@@ -1284,6 +1394,8 @@ end;
 
 procedure TPas2YamlParser.ObjectNameOfMethod;
 begin
+  FObjectNameOfMethod := Lexer.Token;
+
   EnterHandler('ObjectNameOfMethod');
   inherited;
   ExitHandler('ObjectNameOfMethod');
@@ -1388,27 +1500,57 @@ begin
 end;
 
 procedure TPas2YamlParser.ParseFile;
+var
+  unityaml: TSemanticItemYaml;
 begin
-  WriteOutput('---');
-  WriteOutput('type : file');
-  WriteOutput('name : %s', [FUnitName]);
-  WriteOutput('locationSpan : {start: [%d,%d], end: [&fileposendline&,&fileposendchar&]}', [Lexer.LineNumber, Lexer.LinePos]);
-  //locationSpan : {start: [1,0], end: [52,0]}
-  WriteOutput('footerSpan : [&footerspan&]', []);
-  //footerSpan : [1752, 1751]
-  //parsingErrorsDetected : true
-  WriteOutput('children :');
-  WriteOutput('');
-  FOutputIndent := FOutputIndent + '  ';
+  (*
+  ---
+  type : file
+  name : /path/to/file
+  locationSpan : {start: [1,0], end: [19,4]}
+  footerSpan : [0, -1]
+  parsingErrorsDetected : false
+  children :
+  *)
 
+  FYamlMaster.type_ := 'file';
+  FYamlMaster.name  := FUnitName;
+  FYamlMaster.locationSpan.start.a := Lexer.LineNumber+1;
+  FYamlMaster.locationSpan.start.b := Lexer.LinePos;
+  FYamlMaster.footerSpan.a := 0;
+  FYamlMaster.footerSpan.b := -1;
+
+  (*
+  - type : unit
+    name : Unit1
+    locationSpan : {start: [1,0], end: [1,13]}
+    span : [0, 12]
+  *)
+  unityaml := FYamlMaster.children.AddNewItem;
+  unityaml.type_ := 'unit';
+  Lexer.InitAhead;
+  unityaml.name  := Lexer.AheadToken;
+  unityaml.locationSpan.start.a := Lexer.LineNumber+1;
+  unityaml.locationSpan.start.b := 0;
+  unityaml.locationSpan.end_.a  := Lexer.LineNumber+1;
+  unityaml.locationSpan.end_.b  := Lexer.AheadLex.RunPos;
+  unityaml.span.a  := Lexer.LinePos;
+  unityaml.span.b  := Lexer.LinePos + Length(Lexer.Line);
+
+//  FLastLine     := Lexer.LineNumber+1;
+//  FLastLineChar := Lexer.AheadLex.RunPos;
+//  FLastChar     := Lexer.LinePos + Length(Lexer.Line);
+  UpdatePrevYamlLocation(unityaml);
+
+  //FCurrentParent := FYamlMaster;
   EnterHandler('ParseFile');
   inherited;
   ExitHandler('ParseFile');
+  //FCurrentParent := FYamlMaster;
 
-  FOutputIndent := Copy(FOutputIndent, 1, Length(FOutputIndent)-2);
-  ReplaceOutput('&fileposendline&', IntToStr(Lexer.LineNumber));
-  ReplaceOutput('&fileposendchar&', IntToStr(Length(Lexer.Line)));
-  ReplaceOutput('&footerspan&', IntToStr(Lexer.RunPos) + ',' + IntToStr(Lexer.RunPos));
+  //end postion of file
+  FYamlMaster.locationSpan.end_.a := Lexer.LineNumber+1;
+  FYamlMaster.locationSpan.end_.b := Length(Lexer.Line);
 end;
 
 procedure TPas2YamlParser.PointerType;
@@ -1448,12 +1590,15 @@ end;
 
 procedure TPas2YamlParser.ProcedureMethodDeclaration;
 begin
+  FObjectNameOfMethod := '';
+
   EnterHandler('ProcedureMethodDeclaration');
   inherited;
   ExitHandler('ProcedureMethodDeclaration');
 end;
 
 procedure TPas2YamlParser.ProcedureMethodName;
+var procyaml: TSemanticItemYaml;
 begin
 (*
      - type : method
@@ -1461,18 +1606,23 @@ begin
        locationSpan : {start: [11,4], end: [27,3]}
        span : [251, 865]
 *)
-  WriteOutput('- type : method');
-  WriteOutput('  name : %s', [Lexer.Token]);
-  WriteOutput('  locationSpan : {start: [%d,%d], end: [%d,%d]}', [Lexer.LineNumber, 0, Lexer.LineNumber, Length(Lexer.Line)]);
-  WriteOutput('  span : [%d,%d]', [Lexer.LinePos, Lexer.LinePos + Length(Lexer.Line)]);
-  WriteOutput('');
-  FOutputIndent := FOutputIndent + '  ';
+  procyaml := FCurrentParent.children.AddNewItem;
+  procyaml.type_ := 'method';
+  procyaml.name  := Lexer.Token;
+  procyaml.locationSpan.start.a := Lexer.LineNumber+1;
+  procyaml.locationSpan.start.b := 0;
+
+  UpdatePrevYamlLocation(procyaml);
+  FPrevItem := nil;  //no reverse setting end location for this item
 
   EnterHandler('ProcedureMethodName');
   inherited;
   ExitHandler('ProcedureMethodName');
 
-  FOutputIndent := Copy(FOutputIndent, 1, Length(FOutputIndent)-2);
+  procyaml.locationSpan.end_.a  := Lexer.LineNumber+1;
+  procyaml.locationSpan.end_.b  := Length(Lexer.Line);
+  procyaml.span.a  := Lexer.LinePos;
+  procyaml.span.b  := Lexer.LinePos + Length(Lexer.Line);
 end;
 
 procedure TPas2YamlParser.ProgramBlock;
@@ -1652,6 +1802,10 @@ end;
 
 procedure TPas2YamlParser.Run(aUnitName: string; SourceStream: TCustomMemoryStream);
 begin
+  FYamlMaster.Free; //remove old
+  FYamlMaster    := TSemanticMasterYaml.Create;
+  FCurrentParent := nil;
+
   FUnitName := aUnitName;
   inherited;
 end;
@@ -1938,10 +2092,41 @@ begin
 end;
 
 procedure TPas2YamlParser.TypeSection;
+var
+  typeyaml: TSemanticParentYaml;
 begin
+  (*
+  - type : type
+    name : type
+    locationSpan : {start: [4,0], end: [9,0]}
+    headerSpan : [26, 33]
+    footerSpan : [0, -1]
+    children :
+  *)
+  typeyaml := FCurrentParent.children.AddNewParent;
+  typeyaml.type_ := 'type';
+  typeyaml.name  := Lexer.Token;
+  typeyaml.locationSpan.start.a := Lexer.LineNumber+1;
+  typeyaml.locationSpan.start.b := 0;
+  typeyaml.headerSpan.a  := Lexer.LinePos;
+  typeyaml.headerSpan.b  := Lexer.LinePos + Length(Lexer.Line);
+
+  UpdatePrevYamlLocation(typeyaml);
+  //UpdateNextYamlLocation(typeyaml); doesnt work because of missing span info?
+
+  FCurrentParent := typeyaml;
   EnterHandler('TypeSection');
   inherited;
   ExitHandler('TypeSection');
+  FCurrentParent := typeyaml;
+
+  typeyaml.locationSpan.end_.a  := Lexer.LineNumber+1;
+  typeyaml.locationSpan.end_.b  := 0; //-1; //Length(Lexer.Line);  "implementation"
+  //typeyaml.footerSpan.a  := Lexer.LinePos;
+  //typeyaml.footerSpan.b  := Lexer.LinePos + Length(Lexer.Line);
+  //no footer?
+  typeyaml.footerSpan.a  := 0;
+  typeyaml.footerSpan.b  := -1;
 end;
 
 procedure TPas2YamlParser.UnitFile;
@@ -1963,6 +2148,82 @@ begin
   EnterHandler('UnitName');
   inherited;
   ExitHandler('UnitName');
+end;
+
+procedure TPas2YamlParser.UpdateNextYamlLocation(aNode: TBaseSemanticYaml);
+var
+  item: TSemanticItemYaml;
+  parent: TSemanticParentYaml;
+begin
+  //update start location of current part with previous end location
+  //so e.g. all comments after previous token are "spanned"
+  if aNode is TSemanticItemYaml then
+  begin
+    item := (aNode as TSemanticItemYaml);
+
+    if FPrevItem <> nil then
+    begin
+      item.locationSpan.start.a := FPrevItem.locationSpan.end_.a;
+      item.locationSpan.start.b := FPrevItem.locationSpan.end_.b+1;
+      item.span.a := FPrevItem.span.b + 1;
+    end
+    else if FPrevParent <> nil then
+    begin
+      item.locationSpan.start.a := FPrevParent.headerSpan.a;
+      item.locationSpan.start.b := FPrevParent.headerSpan.b+1;
+      //item.span.a := FPrevParent.headerSpan.b + 1;   missing info?
+    end;
+  end
+  else if aNode is TSemanticParentYaml then
+  begin
+    parent := aNode as TSemanticParentYaml;
+
+    if FPrevItem <> nil then
+    begin
+//      parent.locationSpan.start.a := FPrevItem.locationSpan.end_.a;
+//      parent.locationSpan.start.b := FPrevItem.locationSpan.end_.b+1;
+//      parent.span.a := FPrevItem.span.b + 1;
+    end
+    else if FPrevParent <> nil then
+    begin
+      //parent.locationSpan.start.a := FPrevParent.headerSpan.a;
+      //parent.locationSpan.start.b := FPrevParent.headerSpan.b+1;
+      parent.headerSpan.a := FPrevParent.headerSpan.b+1;
+      //parent.headerSpan.b := FPrevParent.headerSpan.b+1;
+    end;
+  end;
+
+  FPrevParent := nil;
+  FPrevItem   := nil;
+  if aNode is TSemanticParentYaml then
+    FPrevParent := aNode as TSemanticParentYaml
+  else if aNode is TSemanticItemYaml then
+    FPrevItem := aNode as TSemanticItemYaml
+end;
+
+procedure TPas2YamlParser.UpdatePrevYamlLocation(aNode: TBaseSemanticYaml);
+begin
+  //update end location of previous part (so e.g. all comments till next
+  //token are "spanned")
+  if FPrevItem <> nil then
+  begin
+    FPrevItem.locationSpan.end_.a := Lexer.LineNumber+1;
+    FPrevItem.locationSpan.end_.b := -1;
+    FPrevItem.span.b := Lexer.LinePos-1;
+  end
+  else if FPrevParent <> nil then
+  begin
+//    FPrevParent.locationSpan.end_.a := Lexer.LineNumber+1;
+//    FPrevParent.locationSpan.end_.b := -1;
+    FPrevParent.headerSpan.b := Lexer.LinePos-1;
+  end;
+
+  FPrevParent := nil;
+  FPrevItem   := nil;
+  if aNode is TSemanticParentYaml then
+    FPrevParent := aNode as TSemanticParentYaml
+  else if aNode is TSemanticItemYaml then
+    FPrevItem := aNode as TSemanticItemYaml
 end;
 
 procedure TPas2YamlParser.UsedUnitName;
@@ -2140,29 +2401,29 @@ begin
   ExitHandler('WriteAccessIdentifier');
 end;
 
-procedure TPas2YamlParser.WriteOutput(const aLine: string);
-begin
-  if Assigned(OnYamlOutput) then
-    OnYamlOutput(FOutputIndent + aLine);
-end;
+//procedure TPas2YamlParser.WriteOutput(const aLine: string);
+//begin
+//  if Assigned(OnYamlOutput) then
+//    OnYamlOutput(FOutputIndent + aLine);
+//end;
 
-procedure TPas2YamlParser.WriteOutput(const aLine: string; const Args: array of const);
-begin
-  if Assigned(OnYamlOutput) then
-    OnYamlOutput(FOutputIndent + Format(aLine, Args));
-end;
+//procedure TPas2YamlParser.WriteOutput(const aLine: string; const Args: array of const);
+//begin
+//  if Assigned(OnYamlOutput) then
+//    OnYamlOutput(FOutputIndent + Format(aLine, Args));
+//end;
 
-procedure TPas2YamlParser.ReplaceOutput(const aSearch, aReplace: string);
-begin
-  if Assigned(OnReplaceOutput) then
-    OnReplaceOutput(aSearch, aReplace);
-end;
+//procedure TPas2YamlParser.ReplaceOutput(const aSearch, aReplace: string);
+//begin
+//  if Assigned(OnReplaceOutput) then
+//    OnReplaceOutput(aSearch, aReplace);
+//end;
 
 procedure TPas2YamlParser.EnterHandler(const aName: string);
 begin
   if Assigned(OnDebugOutput) then
     OnDebugOutput(Format('%s%s -> %s at %d:%d',
-                         [FIndent, aName, Lexer.Token, Lexer.LineNumber, Lexer.LinePos]));
+                         [FIndent, aName, Lexer.Token, Lexer.LineNumber+1, Lexer.LinePos]));
   FIndent := FIndent + '+ ';
 end;
 
@@ -2171,7 +2432,60 @@ begin
   FIndent := Copy(FIndent, 1, Length(FIndent)-2);
   if Assigned(OnDebugOutput) then
     OnDebugOutput(Format('%s%s <- %s at %d:%d',
-                         [FIndent, aName, Lexer.Token, Lexer.LineNumber, Lexer.LinePos]));
+                         [FIndent, aName, Lexer.Token, Lexer.LineNumber+1, Lexer.LinePos]));
 end;
 
 end.
+
+(*
+---
+type : file
+name : /path/to/file
+locationSpan : {start: [1,0], end: [19,4]}
+footerSpan : [0, -1]
+parsingErrorsDetected : false
+children :
+
+  - type : unit
+    name : Unit1
+    locationSpan : {start: [1,0], end: [1,13]}
+    span : [0, 12]
+
+  - type : interface
+    name : interface
+    locationSpan : {start: [2,0], end: [9,0]}
+    headerSpan : [13, 25]
+    footerSpan : [0, -1]
+    children :
+
+      - type : type
+        name : type
+        locationSpan : {start: [4,0], end: [9,0]}
+        headerSpan : [26, 33]
+        footerSpan : [0, -1]
+        children :
+
+          - type : class
+            name : TTest
+            locationSpan : {start: [6,0], end: [9,0]}
+            headerSpan : [34, 59]
+            footerSpan : [81, 88]
+            children :
+
+              - type : procedure declaration
+                name : Test
+                locationSpan : {start: [7,0], end: [7,21]}
+                span : [60, 80]
+
+  - type : implementation
+    name : implementation
+    locationSpan : {start: [9,0], end: [19,4]}
+    headerSpan : [89, 106]
+    footerSpan : [164, 169]
+    children :
+
+      - type : procedure
+        name : TTest.Test
+        locationSpan : {start: [11,0], end: [18,0]}
+        span : [107, 163]
+*)

@@ -10,8 +10,11 @@ program pas2yaml;
 //  ./test/src.pas ./test/result.pas
 
 uses
-  Classes, SysUtils, IOUtils,
-  PasToYamlParser;
+  Classes,
+  SysUtils,
+  IOUtils,
+  SemanticYaml in 'SemanticYaml.pas',
+  PasToYamlParser in 'PasToYamlParser.pas';
 
 var
   i: Integer;
@@ -19,7 +22,7 @@ var
   sFlagFile, sLine: string;
   sFileToParse, sOutputFile: string;
   parser: TPas2YamlParser;
-  strYaml: TStringBuilder;
+  //strYaml: TStringBuilder;
   strmstring, strmstring2: TStringStream;
   sData: string;
 begin
@@ -52,24 +55,8 @@ begin
     //create stuff
     parser     := TPas2YamlParser.Create;
     strmstring := TStringStream.Create;
-    strYaml    := TStringBuilder.Create;
+    //strYaml    := TStringBuilder.Create;
     try
-      //attach output events
-      parser.OnYamlOutput :=
-        procedure(const aLine: string)
-        begin
-          strYaml.AppendLine(aLine);
-        end;
-      parser.OnReplaceOutput :=
-        procedure(const aSearch, aReplace: string)
-        var sold: string;
-        begin
-          sold := strYaml.ToString;
-          sold := StringReplace(sold, aSearch, aReplace, [rfReplaceAll]);
-          strYaml.Clear;
-          strYaml.Append(sold);
-        end;
-
       // Write the "flagfile" when you're ready
       if sFlagFile <> '' then
         TFile.WriteAllText(sFlagFile, 'READY');
@@ -105,7 +92,7 @@ begin
         TFile.AppendAllText('debug.log', 'Received outputfile: ' + sOutputFile +#13);
 
         // load the file
-        strYaml.Clear;
+        //strYaml.Clear;
         strmstring.LoadFromFile(sFileToParse);
         sData := strmstring.DataString;
         strmstring.Clear;
@@ -114,7 +101,11 @@ begin
         try
           strmstring2.Position := 0;
           // Parse the "fileToParse"
-          parser.Run(sFileToParse, strmstring2);
+          try
+            parser.Run(sFileToParse, strmstring2);
+          except
+            parser.Yaml.parsingErrorsDetected := True;
+          end;
         finally
           strmstring2.Free;
         end;
@@ -122,8 +113,9 @@ begin
         //debug:
         TFile.AppendAllText('debug.log', 'Parsed and writing to outputfile: ' + sOutputFile +#13);
         // Write the result to "outputFile"
-        TFile.WriteAllText(sOutputFile, strYaml.ToString);
-        strYaml.Clear;
+        TFile.WriteAllText(sOutputFile, parser.Yaml.Generate(''));
+        TFile.WriteAllText(ExtractFileName(sFileToParse) + '.tree', parser.Yaml.Generate(''));
+        //strYaml.Clear;
         // write OK when you're done or KO if it didn't work
         WriteLn('OK');
         Flush(Output);  //important!
@@ -136,7 +128,7 @@ begin
         sOutputFile  := '';
       end;
     finally
-      strYaml.Free;
+      //strYaml.Free;
       strmstring.Free;
       parser.Free;
     end;

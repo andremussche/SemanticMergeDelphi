@@ -5,7 +5,7 @@ interface
 type
   TTest = class(TObject)
     procedure Test;
-	procedure Source;
+    procedure Source;
   end;
 
 implementation
