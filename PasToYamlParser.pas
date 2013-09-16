@@ -4,7 +4,7 @@ interface
 
 uses
   Classes,
-  CastaliaSimplePasPar, SemanticYaml;
+  CastaliaSimplePasPar, SemanticYaml, Generics.Collections;
 
 type
   TStringEvent  = reference to procedure(const aText: string);
@@ -30,10 +30,26 @@ type
     FPrevItem,
     FCurrentItem: TSemanticItemYaml;
     FPrevSpan: TSemanticSpan;
+    FPrevClassVisibility: TSemanticParentYaml;
     function  GetYaml: TSemanticMasterYaml;
     procedure UpdatePrevYamlLocation(aNode: TBaseSemanticYaml);
     procedure UpdateNextYamlLocation(aNode: TBaseSemanticYaml);
+
+    var FCurrentMethod: TSemanticItemYaml;
+    function  ProcessItem_Before(const aType: string; aExactPos: Boolean; aDebugHandler: string): TSemanticItemYaml;
+    procedure ProcessItem_Next(const aItemYaml: TSemanticItemYaml; aExactPos: Boolean;
+      aDebugHandler: string);
+
+    var
+      FParentRecursion: Integer;
+      FParentStack: TStack<TSemanticParentYaml>;
+    function  ProcessParent_Before(const aType, aDebugHandler: string): TSemanticParentYaml;
+    procedure ProcessParent_Next(const aParentYaml: TSemanticParentYaml; aIncludeLastLine: Boolean;
+      aDebugHandler: string);
   public
+    procedure  AfterConstruction; override;
+    destructor Destroy; override;
+
     procedure Run(aUnitName: string; SourceStream: TCustomMemoryStream); override;
 
     property  Yaml: TSemanticMasterYaml read GetYaml;
@@ -344,6 +360,12 @@ begin
   ExitHandler('AdditiveOperator');
 end;
 
+procedure TPas2YamlParser.AfterConstruction;
+begin
+  inherited;
+  FParentStack := TStack<TSemanticParentYaml>.Create;
+end;
+
 procedure TPas2YamlParser.AncestorId;
 begin
   EnterHandler('AncestorId');
@@ -444,10 +466,16 @@ begin
 end;
 
 procedure TPas2YamlParser.ClassField;
+var itemyaml: TSemanticItemYaml;
 begin
-  EnterHandler('ClassField');
+  itemyaml := ProcessItem_Before('field', False {full line}, 'ClassField');
+  FCurrentMethod := itemyaml;
   inherited;
-  ExitHandler('ClassField');
+  ProcessItem_Next(itemyaml, False {full line}, 'ClassField');
+
+//  EnterHandler('ClassField');
+//  inherited;
+//  ExitHandler('ClassField');
 end;
 
 procedure TPas2YamlParser.ClassForward;
@@ -461,7 +489,9 @@ procedure TPas2YamlParser.ClassFunctionHeading;
 begin
   EnterHandler('ClassFunctionHeading');
   inherited;
-  ExitHandler('ClassFunctionHeading');
+  //ExitHandler('ClassFunctionHeading');
+  ProcessItem_Next(FCurrentMethod, False {full line}, 'ClassFunctionHeading');
+  //for start, see FunctionMethodName
 end;
 
 procedure TPas2YamlParser.ClassHeritage;
@@ -510,14 +540,22 @@ procedure TPas2YamlParser.ClassProcedureHeading;
 begin
   EnterHandler('ClassProcedureHeading');
   inherited;
-  ExitHandler('ClassProcedureHeading');
+  //ExitHandler('ClassProcedureHeading');
+  ProcessItem_Next(FCurrentMethod, False {full line}, 'ClassProcedureHeading');
+  //for start, see ProcedureMethodName
 end;
 
 procedure TPas2YamlParser.ClassProperty;
 begin
   EnterHandler('ClassProperty');
   inherited;
-  ExitHandler('ClassProperty');
+  //ExitHandler('ClassProperty');
+  ProcessItem_Next(FCurrentMethod, False {full line}, 'ClassProperty');
+  //for start, see PropertyName
+
+//  EnterHandler('ClassProperty');
+//  inherited;
+//  ExitHandler('ClassProperty');
 end;
 
 procedure TPas2YamlParser.ClassReferenceType;
@@ -528,6 +566,22 @@ begin
 end;
 
 procedure TPas2YamlParser.ClassType;
+var parentyaml: TSemanticParentYaml;
+begin
+  FPrevClassVisibility := nil;
+  parentyaml := ProcessParent_Before('class', 'ClassType');
+  //EnterHandler('UsesClause');
+
+  inherited;
+
+  //ExitHandler('UsesClause');
+  if FPrevClassVisibility <> nil then
+    ProcessParent_Next(FPrevClassVisibility, False, 'end of Visibility');
+  FPrevClassVisibility := nil;
+
+  ProcessParent_Next(parentyaml, True{incl last line}, 'ClassType');
+end;
+(*
 var classyaml: TSemanticParentYaml;
 begin
   (*
@@ -537,7 +591,7 @@ begin
     headerSpan : [34, 59]
     footerSpan : [81, 88]
     children :
-  *)
+  )
   classyaml := FCurrentParent.children.AddNewParent;
   classyaml.type_ := 'class';
   classyaml.name  := FCurrentType;
@@ -562,6 +616,7 @@ begin
 
   FPrevSpan := classyaml.footerSpan;
 end;
+*)
 
 procedure TPas2YamlParser.ClassTypeEnd;
 begin
@@ -712,6 +767,13 @@ end;
 
 procedure TPas2YamlParser.DeclarationSection;
 begin
+  //include last empty line in previous footer + reset
+  UpdatePrevYamlLocation(nil);
+  if (FPrevSpan <> nil) then
+    if FPrevSpan.b < (Lexer.TokenPos-1) then
+      FPrevSpan.b := Lexer.TokenPos-1;
+  FPrevSpan := nil;
+
   EnterHandler('DeclarationSection');
   inherited;
   ExitHandler('DeclarationSection');
@@ -722,6 +784,12 @@ begin
   EnterHandler('Designator');
   inherited;
   ExitHandler('Designator');
+end;
+
+destructor TPas2YamlParser.Destroy;
+begin
+  FParentStack.Free;
+  inherited;
 end;
 
 procedure TPas2YamlParser.DestructorHeading;
@@ -1026,13 +1094,26 @@ begin
 end;
 
 procedure TPas2YamlParser.FunctionMethodName;
+var itemyaml: TSemanticItemYaml;
 begin
-  EnterHandler('FunctionMethodName');
+  itemyaml := ProcessItem_Before('method', False {full line}, 'FunctionMethodName');
+  FCurrentMethod := itemyaml;
   inherited;
+  //  ProcessItem_Next(itemyaml, 'FunctionMethodName');  see ClassFunctionHeading
   ExitHandler('FunctionMethodName');
 end;
 
 procedure TPas2YamlParser.FunctionProcedureBlock;
+var itemyaml: TSemanticItemYaml;
+begin
+  itemyaml := ProcessItem_Before('method implementation', False {full line}, 'FunctionProcedureBlock');
+  itemyaml.name  := FObjectNameOfMethod + '.' + FFunctionProcedureName;
+  FCurrentMethod := itemyaml;
+  inherited;
+  ProcessItem_Next(itemyaml, False {full line}, 'FunctionProcedureBlock');
+  //ExitHandler('FunctionProcedureBlock');
+end;
+(*
 var procyaml: TSemanticItemYaml;
 begin
 (*
@@ -1040,7 +1121,7 @@ begin
         name : TTest.Test
         locationSpan : {start: [11,0], end: [18,0]}
         span : [107, 163]
-*)
+)
   procyaml := FCurrentParent.children.AddNewItem;
   procyaml.type_ := 'method implementation';
   procyaml.name  := FObjectNameOfMethod + '.' + FFunctionProcedureName;
@@ -1063,6 +1144,7 @@ begin
 //  procyaml.locationSpan.end_.b  := Length(Lexer.Line);
 //  procyaml.span.b  := Lexer.LinePos + Length(Lexer.Line);
 end;
+*)
 
 procedure TPas2YamlParser.FunctionProcedureName;
 begin
@@ -1110,6 +1192,8 @@ begin
     footerSpan : [164, 169]   //todo
     children :
   *)
+  implyaml := ProcessParent_Before('implementation', 'ImplementationSection');
+  {
   implyaml := FYamlMaster.children.AddNewParent;
   implyaml.type_ := 'implementation';
   implyaml.name  := Lexer.Token;
@@ -1122,7 +1206,11 @@ begin
 
   FCurrentParent := implyaml;
   EnterHandler('ImplementationSection');
+  }
   inherited;
+
+  ProcessParent_Next(implyaml, True{incl last line}, 'ImplementationSection');
+  {
   ExitHandler('ImplementationSection');
   FCurrentParent := implyaml;
 
@@ -1142,6 +1230,7 @@ begin
   implyaml.footerSpan.b    := Lexer.LinePos + Length(Lexer.Line);
 
   FPrevSpan := implyaml.footerSpan;
+  }
 end;
 
 procedure TPas2YamlParser.IncludeFile;
@@ -1233,6 +1322,9 @@ begin
     footerSpan : [0, -1]
     children :
   *)
+
+  intyaml := ProcessParent_Before('interface', 'InterfaceSection');
+  {
   intyaml := FYamlMaster.children.AddNewParent;
   intyaml.type_ := 'interface';
   intyaml.name  := Lexer.Token;
@@ -1245,7 +1337,10 @@ begin
 
   FCurrentParent := intyaml;
   EnterHandler('InterfaceSection');
+  }
   inherited;
+  ProcessParent_Next(intyaml, False {not full line}, 'InterfaceSection');
+  {
   ExitHandler('InterfaceSection');
   FCurrentParent := intyaml;
 
@@ -1262,6 +1357,7 @@ begin
     intyaml.footerSpan.a := Lexer.LinePos;
   intyaml.footerSpan.b  := Lexer.LinePos-1;
   FPrevSpan := intyaml.footerSpan;
+  }
 end;
 
 procedure TPas2YamlParser.InterfaceType;
@@ -1617,14 +1713,21 @@ begin
 end;
 
 procedure TPas2YamlParser.ProcedureMethodName;
+var itemyaml: TSemanticItemYaml;
+begin
+  itemyaml := ProcessItem_Before('method', False {full line}, 'ProcedureMethodName');
+  FCurrentMethod := itemyaml;
+  inherited;
+  //ProcessItem_Next(itemyaml, 'ProcedureMethodName');   see ClassProcedureHeading
+  ExitHandler('ProcedureMethodName');
+end;
+(*
 var procyaml: TSemanticItemYaml;
 begin
-(*
-     - type : method
-       name : preVisit
-       locationSpan : {start: [11,4], end: [27,3]}
-       span : [251, 865]
-*)
+  //     - type : method
+  //       name : preVisit
+  //       locationSpan : {start: [11,4], end: [27,3]}
+  //       span : [251, 865]
   procyaml := FCurrentParent.children.AddNewItem;
   procyaml.type_ := 'method';
   procyaml.name  := Lexer.Token;
@@ -1644,6 +1747,166 @@ begin
   procyaml.span.b  := Lexer.LinePos + Length(Lexer.Line);
 
   FPrevSpan := procyaml.span;
+end;
+  *)
+
+function TPas2YamlParser.ProcessItem_Before(const aType: string; aExactPos: Boolean; aDebugHandler: string): TSemanticItemYaml;
+var itemyaml: TSemanticItemYaml;
+begin
+  //     - type : method
+  //       name : preVisit
+  //       locationSpan : {start: [11,4], end: [27,3]}
+  //       span : [251, 865]
+  itemyaml := FCurrentParent.children.AddNewItem;
+  itemyaml.type_ := aType; //'method';
+  itemyaml.name  := Lexer.Token;
+  itemyaml.locationSpan.start.a := Lexer.LineNumber+1;
+  if aExactPos and (FCurrentParent.children.Count > 1) then   //treat first item without exactpos (e.g. fetch indent of UsedUnitName)
+  begin
+    itemyaml.locationSpan.start.b := Lexer.TokenPos - Lexer.LinePos;
+    itemyaml.span.a  := Lexer.TokenPos;
+ end
+  else
+  begin
+    itemyaml.locationSpan.start.b := 0;
+    itemyaml.span.a  := Lexer.LinePos;
+  end;
+
+  UpdatePrevYamlLocation(itemyaml);
+  //include last empty line in previous footer
+  if (FPrevSpan <> nil) then
+  begin
+    if aExactPos then
+    begin
+      if FPrevSpan.b < (Lexer.TokenPos-1) then
+        FPrevSpan.b := Lexer.TokenPos-1;
+    end
+    else
+    begin
+      if FPrevSpan.b < (Lexer.LinePos-1) then
+        FPrevSpan.b := Lexer.LinePos-1;
+    end;
+  end;
+  FPrevItem := nil;  //no reverse setting end location for this item
+
+  EnterHandler(aDebugHandler); //'ProcedureMethodName');
+  Result := itemyaml;
+end;
+
+procedure TPas2YamlParser.ProcessItem_Next(const aItemYaml: TSemanticItemYaml; aExactPos: Boolean; aDebugHandler: string);
+begin
+  ExitHandler(aDebugHandler); //'ProcedureMethodName');
+
+  aItemYaml.locationSpan.end_.a    := Lexer.LineNumber+1;
+  //same line? then till end of line
+  if aItemYaml.locationSpan.start.a = aItemYaml.locationSpan.end_.a then
+  begin
+    if aExactPos then
+    begin
+      aItemYaml.locationSpan.end_.b  := Lexer.TokenPos - Lexer.LinePos;
+      aItemYaml.span.b               := Lexer.TokenPos;
+    end
+    else
+    begin
+      aItemYaml.locationSpan.end_.b  := Length(Lexer.Line);
+      aItemYaml.span.b               := Lexer.LinePos + Length(Lexer.Line);
+    end;
+  end
+  //else start of next line (without first char at pos 0!)
+  else
+  begin
+    aItemYaml.locationSpan.end_.b  := -1;
+    aItemYaml.span.b  := Lexer.LinePos-1;
+  end;
+
+  FPrevSpan := aItemYaml.span;
+end;
+
+function TPas2YamlParser.ProcessParent_Before(const aType,
+  aDebugHandler: string): TSemanticParentYaml;
+begin
+  (*
+  - type : implementation
+    name : implementation
+    locationSpan : {start: [9,0], end: [19,4]}
+    headerSpan : [89, 106]
+    footerSpan : [164, 169]   //todo
+    children :
+  *)
+  if FParentRecursion <= 0 then
+  begin
+    Result := FYamlMaster.children.AddNewParent;
+    FParentStack.Clear;
+  end
+  else
+    Result := FCurrentParent.children.AddNewParent;
+  FParentStack.Push(Result);
+  Inc(FParentRecursion);
+  Result.type_ := aType;
+  Result.name  := Lexer.Token;
+  Result.locationSpan.start.a := Lexer.LineNumber+1;
+  Result.locationSpan.start.b := 0;
+  Result.headerSpan.a  := Lexer.LinePos;
+  Result.headerSpan.b  := Lexer.LinePos + Length(Lexer.Line);
+
+  UpdatePrevYamlLocation(Result);
+  FPrevItem := nil;  //no reverse setting end location for this item
+  FPrevSpan := nil;
+
+  FCurrentParent := Result;
+  EnterHandler(aDebugHandler);
+end;
+
+procedure TPas2YamlParser.ProcessParent_Next(
+  const aParentYaml: TSemanticParentYaml; aIncludeLastLine: Boolean; aDebugHandler: string);
+begin
+  ExitHandler(aDebugHandler);
+  //FCurrentParent := aParentYaml;
+  Dec(FParentRecursion);
+  FParentStack.Pop();
+  if FParentStack.Count > 0 then
+    FCurrentParent := FParentStack.Peek
+  else
+    FCurrentParent := nil;
+
+  aParentYaml.locationSpan.end_.a  := Lexer.LineNumber+1;
+  //same line? then till end of line
+  if (aParentYaml.locationSpan.start.a = aParentYaml.locationSpan.end_.a) or
+     aIncludeLastLine then
+  begin
+    aParentYaml.locationSpan.end_.b  := Length(Lexer.Line);
+    //aParentYaml.span.b               := Lexer.LinePos + Length(Lexer.Line);
+  end
+  //else start of next line (without first char at pos 0!)
+  else
+  begin
+    aParentYaml.locationSpan.end_.b  := -1;
+    //aParentYaml.span.b  := Lexer.LinePos-1;
+  end;
+
+  //include last empty line in previous footer
+  if FPrevSpan <> nil then
+    FPrevSpan.b := Lexer.LinePos-1;
+
+  //include last empty line in footer! (e.g. from "class" footerspan)
+  if FPrevSpan <> nil then
+    aParentYaml.footerSpan.a := FPrevSpan.b+1
+  else
+    aParentYaml.footerSpan.a := Lexer.LinePos;
+  if aIncludeLastLine then
+    aParentYaml.footerSpan.b := Lexer.LinePos + Length(Lexer.Line)
+  else
+    aParentYaml.footerSpan.b := Lexer.LinePos-1;
+
+  //invalid footer?
+  if (aParentYaml.footerSpan.a >= aParentYaml.footerSpan.b) or
+     (aParentYaml.footerSpan.a <= aParentYaml.headerSpan.b) then
+  begin
+    aParentYaml.footerSpan.a := 0;
+    aParentYaml.footerSpan.b := -1;
+  end
+  else
+    FPrevSpan := aParentYaml.footerSpan;
 end;
 
 procedure TPas2YamlParser.ProgramBlock;
@@ -1675,10 +1938,17 @@ begin
 end;
 
 procedure TPas2YamlParser.PropertyName;
+var itemyaml: TSemanticItemYaml;
 begin
-  EnterHandler('PropertyName');
+  itemyaml := ProcessItem_Before('property', False {full line}, 'PropertyName');
+  FCurrentMethod := itemyaml;
   inherited;
+  //  ProcessItem_Next(itemyaml, 'PropertyName');  see ClassProperty
   ExitHandler('PropertyName');
+
+//  EnterHandler('PropertyName');
+//  inherited;
+//  ExitHandler('PropertyName');
 end;
 
 procedure TPas2YamlParser.PropertyParameterConst;
@@ -2113,6 +2383,15 @@ begin
 end;
 
 procedure TPas2YamlParser.TypeSection;
+var parentyaml: TSemanticParentYaml;
+begin
+  parentyaml := ProcessParent_Before('type', 'TypeSection');
+  //EnterHandler('UsesClause');
+  inherited;
+  //ExitHandler('UsesClause');
+  ProcessParent_Next(parentyaml, False{no full last line}, 'TypeSection');
+end;
+(*
 var
   typeyaml: TSemanticParentYaml;
 begin
@@ -2123,7 +2402,7 @@ begin
     headerSpan : [26, 33]
     footerSpan : [0, -1]
     children :
-  *)
+  )
   typeyaml := FCurrentParent.children.AddNewParent;
   typeyaml.type_ := 'type';
   typeyaml.name  := Lexer.Token;
@@ -2151,6 +2430,7 @@ begin
   //no footer, then keep last known span
   //FPrevSpan := classyaml.footerSpan;
 end;
+*)
 
 procedure TPas2YamlParser.UnitFile;
 begin
@@ -2250,10 +2530,13 @@ begin
 end;
 
 procedure TPas2YamlParser.UsedUnitName;
+var itemyaml: TSemanticItemYaml;
 begin
-  EnterHandler('UsedUnitName');
+  itemyaml := ProcessItem_Before('used unit', True{exact pos}, 'UsedUnitName');
+  FCurrentMethod := itemyaml;
   inherited;
-  ExitHandler('UsedUnitName');
+  ProcessItem_Next(itemyaml, True{exact pos}, 'UsedUnitName');
+  //ExitHandler('UsedUnitName');
 end;
 
 procedure TPas2YamlParser.UsedUnitsList;
@@ -2264,10 +2547,13 @@ begin
 end;
 
 procedure TPas2YamlParser.UsesClause;
+var parentyaml: TSemanticParentYaml;
 begin
-  EnterHandler('UsesClause');
+  parentyaml := ProcessParent_Before('uses', 'UsesClause');
+  //EnterHandler('UsesClause');
   inherited;
-  ExitHandler('UsesClause');
+  //ExitHandler('UsesClause');
+  ProcessParent_Next(parentyaml, False{no full last line}, 'UsesClause');
 end;
 
 procedure TPas2YamlParser.VarAbsolute;
@@ -2370,30 +2656,51 @@ end;
 
 procedure TPas2YamlParser.VisibilityPrivate;
 begin
-  EnterHandler('VisibilityPrivate');
+  if FPrevClassVisibility <> nil then
+    ProcessParent_Next(FPrevClassVisibility, False, 'end of Visibility');
+  FPrevClassVisibility := ProcessParent_Before('visibility', 'VisibilityPrivate');
   inherited;
-  ExitHandler('VisibilityPrivate');
+//  ProcessItem_Next(itemyaml, False {full line}, 'VisibilityPrivate');
+//  EnterHandler('VisibilityPrivate');
+//  inherited;
+//  ExitHandler('VisibilityPrivate');
 end;
 
 procedure TPas2YamlParser.VisibilityProtected;
 begin
-  EnterHandler('VisibilityProtected');
+  if FPrevClassVisibility <> nil then
+    ProcessParent_Next(FPrevClassVisibility, False, 'end of Visibility');
+  FPrevClassVisibility := ProcessParent_Before('visibility', 'VisibilityProtected');
   inherited;
-  ExitHandler('VisibilityProtected');
+//  ProcessItem_Next(itemyaml, False {full line}, 'VisibilityProtected');
+//  EnterHandler('VisibilityProtected');
+//  inherited;
+//  ExitHandler('VisibilityProtected');
 end;
 
 procedure TPas2YamlParser.VisibilityPublic;
+//var itemyaml: TSemanticParentYaml;
 begin
-  EnterHandler('VisibilityPublic');
+  if FPrevClassVisibility <> nil then
+    ProcessParent_Next(FPrevClassVisibility, False, 'end of Visibility');
+  FPrevClassVisibility := ProcessParent_Before('visibility', 'VisibilityPublic');
   inherited;
-  ExitHandler('VisibilityPublic');
+  //ProcessParent_Next(itemyaml, False, 'VisibilityPublic');
+//  EnterHandler('VisibilityPublic');
+//  inherited;
+//  ExitHandler('VisibilityPublic');
 end;
 
 procedure TPas2YamlParser.VisibilityPublished;
 begin
-  EnterHandler('VisibilityPublished');
+  if FPrevClassVisibility <> nil then
+    ProcessParent_Next(FPrevClassVisibility, False, 'end of Visibility');
+  FPrevClassVisibility := ProcessParent_Before('visibility', 'VisibilityPublished');
   inherited;
-  ExitHandler('VisibilityPublished');
+//  ProcessItem_Next(itemyaml, False {full line}, 'VisibilityPublished');
+//  EnterHandler('VisibilityPublished');
+//  inherited;
+//  ExitHandler('VisibilityPublished');
 end;
 
 procedure TPas2YamlParser.VisibilityUnknown;
