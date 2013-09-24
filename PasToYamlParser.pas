@@ -3,8 +3,10 @@ unit PasToYamlParser;
 interface
 
 uses
-  Classes,
-  CastaliaSimplePasPar, SemanticYaml, Generics.Collections;
+  {$IF NOT OXYGENE}
+  Classes, Generics.Collections,
+  {$ENDIF}
+  CastaliaSimplePasPar, SemanticYaml;
 
 type
   TStringEvent  = reference to procedure(const aText: String);
@@ -47,9 +49,10 @@ type
     procedure ProcessParent_Next(const aParentYaml: TSemanticParentYaml; aIncludeLastLine: Boolean;
       aDebugHandler: String);
   public
-    procedure  AfterConstruction; override;
+    procedure AfterConstruction; override;
+    {$IF NOT OXYGENE}
     destructor Destroy; override;
-
+    {$ENDIF}
     procedure Run(aUnitName: String; SourceStream: TCustomMemoryStream); override;
 
     property  Yaml: TSemanticMasterYaml read GetYaml;
@@ -128,7 +131,7 @@ type
     procedure ContainsExpression; override;
     procedure ContainsIdentifier; override;
     procedure ContainsStatement; override;
-    {$IFDEF D8_NEWER}
+    {$IFDEF D8_NEWER OR OXYGENE}
     procedure CustomAttribute; override; //JThurman 2004-03-03
     {$ENDIF}
     procedure DeclarationSection; override;
@@ -340,10 +343,10 @@ type
   end;
 
 implementation
-
+{$IF NOT OXYGENE}
 uses
   SysUtils;
-
+{$ENDIF}
 { TMySimplePasPar }
 
 procedure TPas2YamlParser.AccessSpecifier;
@@ -785,13 +788,13 @@ begin
   inherited;
   ExitHandler('Designator');
 end;
-
+{$IF NOT OXYGENE}
 destructor TPas2YamlParser.Destroy;
 begin
   FParentStack.Free;
   inherited;
 end;
-
+{$ENDIF}
 procedure TPas2YamlParser.DestructorHeading;
 begin
   EnterHandler('DestructorHeading');
@@ -2763,6 +2766,11 @@ begin
   if Assigned(OnDebugOutput) then
     OnDebugOutput(Format('%s%s <- %s at %d:%d',
                          [FIndent, aName, Lexer.Token, Lexer.LineNumber+1, Lexer.LinePos]));
+end;
+
+procedure TPas2YamlParser.CustomAttribute;
+begin
+
 end;
 
 end.

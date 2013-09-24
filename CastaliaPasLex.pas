@@ -2390,17 +2390,9 @@ begin
         if FUseDefines then
         begin
           Param := DirectiveParam;
-          {$IF OXYGENE}
-          if 'DEFINED'.IndexOf(Param) = 0 then
-          {$ELSE}
           if Pos('DEFINED', Param) = 1 then
-          {$ENDIF}  
-          begin
-            {$IF OXYGENE}
-            Def := Param.Substring(8, length(Param) - 9);
-            {$ELSE}
+          begin      
             Def := Copy(Param, 9, length(Param) - 9);
-            {$ENDIF}  
             EnterDefineBlock(IsDefined(Def));
           end;
         end;
@@ -2435,17 +2427,9 @@ begin
               if FDefineStack > 0 then
                 dec(FDefineStack);
               Param := DirectiveParam;
-              {$IF OXYGENE}
-              if 'DEFINED'.IndexOf(Param) = 0 then
-              {$ELSE}
-              if Pos('DEFINED', Param) = 1 then
-              {$ENDIF}  
+              if Pos('DEFINED', Param) = 1 then  
               begin
-                {$IF OXYGENE}
-                Def := Param.Substring(8, length(Param) - 9);
-                {$ELSE}
                 Def := Copy(Param, 9, length(Param) - 9);
-                {$ENDIF}  
                 EnterDefineBlock(IsDefined(Def));
               end;
             end;
@@ -2643,8 +2627,8 @@ end;
 procedure TmwBasePasLex.LFProc;
 begin
   case fCommentState of
-	csBor: FTokenID := TptTokenKind.ptCRLFCo;
-	csAnsi: FTokenID := TptTokenKind.ptCRLFCo;
+	  TCommentState.csBor: FTokenID := TptTokenKind.ptCRLFCo;
+	  TCommentState.csAnsi: FTokenID := TptTokenKind.ptCRLFCo;
   else FTokenID := TptTokenKind.ptCRLF;
   end;
   inc(Run);

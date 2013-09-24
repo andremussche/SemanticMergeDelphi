@@ -1,10 +1,10 @@
 unit SemanticYaml;
 
 interface
-
+{$IF NOT OXYGENE}
 uses
   Generics.Collections;
-
+{$ENDIF}
 type
   TSemanticItemYaml = class;
   TSemanticParentYaml = class;
@@ -41,7 +41,9 @@ type
   TSemanticLocationSpan = class(TBaseYaml)
   public
     procedure  AfterConstruction; override;
+    {$IF NOT OXYGENE}
     destructor Destroy; override;
+    {$ENDIF}
   public
     start: TSemanticSpan;
     end_ : TSemanticSpan;
@@ -59,7 +61,9 @@ type
   TSemanticMasterYaml = class(TBaseSemanticYaml)
   public
     procedure  AfterConstruction; override;
+    {$IF NOT OXYGENE}
     destructor Destroy; override;
+    {$ENDIF}
   public
     locationSpan: TSemanticLocationSpan;
     footerSpan: TSemanticSpan;
@@ -76,7 +80,9 @@ type
   TSemanticItemYaml = class(TBaseSemanticYaml)
   public
     procedure  AfterConstruction; override;
+    {$IF NOT OXYGENE}
     destructor Destroy; override;
+    {$ENDIF}
   public
     locationSpan: TSemanticLocationSpan;
     span: TSemanticSpan;
@@ -93,7 +99,9 @@ type
   TSemanticParentYaml = class(TBaseSemanticYaml)
   public
     procedure  AfterConstruction; override;
+    {$IF NOT OXYGENE}
     destructor Destroy; override;
+    {$ENDIF}
   public
     locationSpan: TSemanticLocationSpan;
     headerSpan: TSemanticSpan;
@@ -103,10 +111,10 @@ type
   end;
 
 implementation
-
+{$IF NOT OXYGENE}
 uses
   SysUtils;
-
+{$ENDIF}
 { TSemanticLocationSpan }
 
 procedure TSemanticLocationSpan.AfterConstruction;
@@ -115,14 +123,14 @@ begin
   start := TSemanticSpan.Create;
   end_  := TSemanticSpan.Create;
 end;
-
+{$IF NOT OXYGENE}
 destructor TSemanticLocationSpan.Destroy;
 begin
   start.Free;
   end_.Free;
   inherited;
 end;
-
+{$ENDIF}
 function TSemanticLocationSpan.Generate(const aIndent: string): string;
 begin
   //Result := inherited Generate(aIndent);
@@ -139,14 +147,14 @@ begin
   locationSpan := TSemanticLocationSpan.Create;
   span         := TSemanticSpan.Create;
 end;
-
+{$IF NOT OXYGENE}
 destructor TSemanticItemYaml.Destroy;
 begin
   locationSpan.Free;
   span.Free;
   inherited;
 end;
-
+{$ENDIF}
 function TSemanticItemYaml.Generate(const aIndent: string): string;
 begin
   (*  - type : unit
@@ -169,7 +177,7 @@ begin
   footerSpan  := TSemanticSpan.Create;
   children    := TBaseSemanticYamlList.Create;
 end;
-
+{$IF NOT OXYGENE}
 destructor TSemanticParentYaml.Destroy;
 begin
   locationSpan.Free;
@@ -178,7 +186,7 @@ begin
   children.Free;
   inherited;
 end;
-
+{$ENDIF}
 function TSemanticParentYaml.Generate(const aIndent: string): string;
 begin
   (*   - type : interface
@@ -232,7 +240,7 @@ begin
   footerSpan   := TSemanticSpan.Create;
   children     := TBaseSemanticYamlList.Create;
 end;
-
+{$IF NOT OXYGENE}
 destructor TSemanticMasterYaml.Destroy;
 begin
   locationSpan.Free;
@@ -240,7 +248,7 @@ begin
   children.Free;
   inherited;
 end;
-
+{$ENDIF}
 function TSemanticMasterYaml.Generate(const aIndent: string): string;
 begin
   (* ---

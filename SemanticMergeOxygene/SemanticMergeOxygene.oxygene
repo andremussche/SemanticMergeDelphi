@@ -72,16 +72,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CastaliaPasLex.pas" />
-    <Compile Include="CastaliaPasLexTypes.pas" />
-    <Compile Include="CastaliaSimplePasPar.pas" />
-    <Compile Include="CastaliaSimplePasParTypes.pas" />
-    <Compile Include="PasToYamlParser.pas">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="..\CastaliaPasLex.pas" />
+    <Compile Include="..\CastaliaPasLexTypes.pas" />
+    <Compile Include="..\CastaliaSimplePasPar.pas" />
+    <Compile Include="..\CastaliaSimplePasParTypes.pas" />
+    <Compile Include="..\PasToYamlParser.pas" />
     <Compile Include="Program.pas" />
     <Compile Include="Properties\AssemblyInfo.pas" />
-    <Compile Include="SemanticYaml.pas" />
+    <Compile Include="..\SemanticYaml.pas" />
+    <Compile Include="VCL.pas" />
     <Content Include="Properties\App.ico" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

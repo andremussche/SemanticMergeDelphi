@@ -29,12 +29,6 @@ var
 
 type
 
-  {$IF OXYGENE}
-    TObject = Object;
-    PChar = ^Char;
-    ByteBool = Boolean;
-  {$ENDIF}
-
   TMessageEventType = ( meError, meNotSupported );
 
   TMessageEvent = procedure(Sender: TObject; const Typ : TMessageEventType; const Msg: String; X, Y: Integer ) of object; //jdj 7/16/1999; DR 2001-11-06

@@ -167,10 +167,10 @@ const
     ptOverload, ptPascal, ptRegister, ptReintroduce, ptSafeCall, ptStdCall,
     ptVirtual,
     ptDeprecated, ptLibrary, ptPlatform // DR 2001-10-20
-    {$IFDEF D8_NEWER}
+    {$IFDEF D8_NEWER OR OXYGENE}
     , ptStatic //JThurman 2004-11-10
     {$ENDIF}
-    {$IFDEF D9_NEWER}
+    {$IFDEF D9_NEWER OR OXYGENE}
     , ptInline
     {$ENDIF}
     ];  //XM 2002-01-29
@@ -182,9 +182,15 @@ type
   protected
 
   public
+    {$IFDEF OXYGENE}
+    constructor Create(const Msg: String);
+    constructor Create(const Msg: String; const Args: array of Object);
+    constructor Create(const Msg: String; aPosXY: TTokenPoint);
+    {$ELSE}
     constructor Create(const Msg: String);
     constructor CreateFmt(const Msg: string; const Args: array of const);
     constructor CreatePos(const Msg: string; aPosXY: TTokenPoint);
+    {$ENDIF}
     property PosXY: TTokenPoint read FPosXY write FPosXY;
   end;
 
@@ -294,7 +300,7 @@ type
     procedure ContainsExpression; virtual;
     procedure ContainsIdentifier; virtual;
     procedure ContainsStatement; virtual;
-    {$IFDEF D8_NEWER}
+    {$IFDEF D8_NEWER OR OXYGENE}
     procedure CustomAttribute; virtual; //JThurman 2004-03-03
     {$ENDIF}
     procedure DeclarationSection; virtual;
@@ -503,7 +509,7 @@ type
     procedure WhileStatement; virtual;
     procedure WithStatement; virtual;
     procedure WriteAccessIdentifier; virtual;
-    {$IFDEF D8_NEWER}//JThurman 2004-03-21
+    {$IFDEF D8_NEWER OR OXYGENE}//JThurman 2004-03-21
     {This is the syntax for custom attributes, based quite strictly on the
     ECMA syntax specifications for C#, but with a Delphi expression being
     used at the bottom as opposed to a C# expression}
@@ -532,7 +538,9 @@ type
     property TokenID: TptTokenKind read GetTokenID;
   public
     constructor Create;
+    {$IF NOT OXYGENE}
     destructor Destroy; override;
+    {$ENDIF}
     procedure SynError(Error: TmwParseError); virtual;
     procedure Run(UnitName: String; SourceStream: TCustomMemoryStream); virtual;
 
@@ -552,9 +560,9 @@ type
   end;
 
 implementation
-
+{$IF NOT OXYGENE}
 uses Windows;
-
+{$ENDIF}
 { ESyntaxError }
 
 constructor ESyntaxError.Create(const Msg: String);
@@ -565,7 +573,11 @@ begin
   inherited Create(Msg);
 end;
 
+{$IF OXYGENE}
+constructor ESyntaxError.Create(const Msg: String; const Args: array of Object);
+{$ELSE}
 constructor ESyntaxError.CreateFmt(const Msg: String; const Args: array of const);
+{$ENDIF}
 begin
   // !! changed initialization for TTokenPoint
   FPosXY.X:= -1;
@@ -573,7 +585,11 @@ begin
   inherited CreateFmt(Msg, Args);
 end;
 
+{$IF OXYGENE}
+constructor ESyntaxError.Create(const Msg: String; aPosXY: TTokenPoint);
+{$ELSE}
 constructor ESyntaxError.CreatePos(const Msg: String; aPosXY: TTokenPoint);
+{$ENDIF}
 begin
   Message := Msg;
   FPosXY := aPosXY;
@@ -690,6 +706,7 @@ begin
   FUseDefines := False;
 end;
 
+{$IF NOT OXYGENE}
 destructor TmwSimplePasPar.Destroy;
 begin
   ClearDefines; //Must do this here to avoid a memory leak
@@ -700,7 +717,7 @@ begin
   fLexer.Free;
   inherited Destroy;
 end;
-
+{$ENDIF}
 {next two check for ptNull and ExpectedFatal for an EOF Error}
 
 procedure TmwSimplePasPar.Expected(Sym: TptTokenKind);
@@ -1010,7 +1027,7 @@ begin
         begin
           SkipCRLF;
         end;
-      {$IFDEF D8_NEWER} //JThurman 2004-3-19
+      {$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-3-19
       ptSquareOpen:
         begin
           CustomAttribute;
@@ -1176,7 +1193,7 @@ begin
       end;
   end;
 
-  {$IFDEF D8_NEWER}
+  {$IFDEF D8_NEWER OR OXYGENE}
   while Lexer.TokenID = ptSquareOpen do
   begin
     CustomAttribute;
@@ -1375,7 +1392,7 @@ begin
       begin
         VarSection;
       end;
-    {$IFDEF D8_NEWER} //JThurman
+    {$IFDEF D8_NEWER OR OXYGENE} //JThurman
     ptSquareOpen:
       begin
         CustomAttribute;
@@ -1990,7 +2007,7 @@ end;
 
 procedure TmwSimplePasPar.ReturnType;
 begin
-  {$IFDEF D8_NEWER}
+  {$IFDEF D8_NEWER OR OXYGENE}
   while TokenID = ptSquareOpen do
     CustomAttribute;
   {$ENDIF}
@@ -2020,7 +2037,7 @@ end;
 
 procedure TmwSimplePasPar.FormalParameterSection;
 begin
-  {$IFDEF D8_NEWER}//JThurman 2004-03-23
+  {$IFDEF D8_NEWER OR OXYGENE}//JThurman 2004-03-23
   while TokenID = ptSquareOpen do
     CustomAttribute;
   {$ENDIF}
@@ -4133,7 +4150,7 @@ end;
 
 procedure TmwSimplePasPar.ClassMethodOrProperty;
 begin
-  {$IFDEF D8_NEWER}
+  {$IFDEF D8_NEWER OR OXYGENE}
   if TokenID = ptSquareOpen then
     CustomAttribute;
   {$ENDIF}
@@ -5145,7 +5162,7 @@ begin
       ptReintroduce, ptSafeCall, ptStdCall, ptVirtual,
       ptDeprecated, ptLibrary, ptPlatform, // DR 2001-10-20
       ptLocal, ptVarargs // DR 2001-11-14
-      {$IFDEF D8_NEWER}, ptStatic{$ENDIF}{$IFDEF D9_NEWER}, ptInline{$ENDIF}
+      {$IFDEF D8_NEWER OR OXYGENE}, ptStatic{$ENDIF}{$IFDEF D9_NEWER}, ptInline{$ENDIF}
       ] do
     begin
       ProceduralDirective;
@@ -5195,7 +5212,7 @@ begin
       SynError(InvalidVarSection);
     end;
   end;
-  {$IFDEF D8_NEWER}//JThurman 2004-03-22
+  {$IFDEF D8_NEWER OR OXYGENE}//JThurman 2004-03-22
   while TokenID in [ptIdentifier, ptSquareOpen] do
   begin
     if TokenID = ptSquareOpen then
@@ -5218,7 +5235,7 @@ end;
 procedure TmwSimplePasPar.TypeSection;
 begin
   Expected(ptType);
-  {$IFDEF D8_NEWER}
+  {$IFDEF D8_NEWER OR OXYGENE}
   while ((TokenID = ptIdentifier) and (Lexer.ExID in ExTypes)) or
         (Lexer.TokenID = ptSquareOpen) do
   begin
@@ -5265,7 +5282,7 @@ end;
 
 procedure TmwSimplePasPar.TypeParamList;
 begin
-  {$IFDEF D8_NEWER}
+  {$IFDEF D8_NEWER OR OXYGENE}
   if TokenId = ptSquareOpen then
     AttributeSection;
   {$ENDIF}
@@ -5273,7 +5290,7 @@ begin
   while TokenId = ptComma do
   begin
     NextToken;
-    {$IFDEF D8_NEWER}
+    {$IFDEF D8_NEWER OR OXYGENE}
     if TokenId = ptSquareOpen then
       AttributeSection;
     {$ENDIF}
@@ -5294,7 +5311,7 @@ begin
     ptConst:
       begin
         NextToken;
-        {$IFDEF D8_NEWER} //JThurman 2004-03-22
+        {$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-03-22
         while TokenID in [ptIdentifier, ptSquareOpen] do
         begin
           if TokenID = ptSquareOpen then
@@ -5364,7 +5381,7 @@ begin
       begin
         ExportsClause;
       end;
-    {$IFDEF D8_NEWER} //JThurman 2004-03-03
+    {$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-03-03
     ptSquareOpen:
       begin
         CustomAttribute;
@@ -5465,7 +5482,7 @@ end;
 procedure TmwSimplePasPar.RequiresIdentifier;
 begin
   Expected(ptIdentifier);
-  {$IFDEF D8_NEWER}
+  {$IFDEF D8_NEWER OR OXYGENE}
   while Lexer.TokenID = ptPoint do
   begin
     NextToken;
@@ -5513,7 +5530,7 @@ begin
   while TokenID in [ptClass, ptConst, ptConstructor, ptDestructor, ptFunction,
     ptLabel, ptProcedure, ptResourceString, ptThreadVar, ptType, ptVar,
     ptExports
-    {$IFDEF D8_NEWER}//JThurman 2004-03-22
+    {$IFDEF D8_NEWER OR OXYGENE}//JThurman 2004-03-22
     , ptSquareOpen
     {$ENDIF}
     ] do //ptResourceString added jdj
@@ -5531,7 +5548,7 @@ begin
   end;
   while TokenID in [ptConst, ptFunction, ptResourceString, ptProcedure,
     ptThreadVar, ptType, ptVar, ptExports
-    {$IFDEF D8_NEWER} //JThurman 2004-03-03
+    {$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-03-03
     , ptSquareOpen
     {$ENDIF}
     ] do
@@ -5580,7 +5597,7 @@ begin //updated mw 2/22/00, JThurman 6/24/2004
         else
           NextToken;
         end;
-        {$IFDEF D8_NEWER}
+        {$IFDEF D8_NEWER OR OXYGENE}
         if Lexer.TokenID = ptPoint then
         begin
           NextToken;
@@ -5883,7 +5900,7 @@ end;
 
 procedure TmwSimplePasPar.AnonymousMethodType;
 begin
-{$IFDEF D11_NEWER}
+{$IFDEF D11_NEWER OR OXYGENE}
   ExpectedEx(ptReference); //ExID = ptReference
   Expected(ptTo);
   case TokenID of
@@ -6039,7 +6056,7 @@ begin
   end;
 end;
 
-{$IFDEF D8_NEWER} //JThurman 2004-03-03
+{$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-03-03
 
 procedure TmwSimplePasPar.GlobalAttributes;
 begin

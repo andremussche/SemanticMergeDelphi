@@ -18,9 +18,9 @@ unit CastaliaPasLexTypes;
 unit CastaliaSimplePasParTypes;
 
 interface
-
+{$IF NOT OXYGENE}
 uses SysUtils, TypInfo;
-
+{$ENDIF}
 type
   TmwParseError = (
     InvalidAdditiveOperator,
