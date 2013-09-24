@@ -315,11 +315,11 @@ type
     ciWriteAccessIdentifier
     );
 
-function ParserErrorName(Value: TmwParseError): string;
+function ParserErrorName(Value: TmwParseError): String;
 
 implementation
 
-function ParserErrorName(Value: TmwParseError): string;
+function ParserErrorName(Value: TmwParseError): String;
 begin
   result := GetEnumName(TypeInfo(TmwParseError), Integer(Value));
 end;

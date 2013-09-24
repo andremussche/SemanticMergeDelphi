@@ -11,19 +11,19 @@ type
 
   TBaseYaml = class
   public
-    function Generate(const aIndent: string): string; virtual; abstract;
+    function Generate(const aIndent: String): String; virtual; abstract;
   end;
 
   TBaseSemanticYaml = class(TBaseYaml)
   public
-    type_: string;
-    name: string;
-    function Generate(const aIndent: string): string; override;
+    type_: String;
+    name: String;
+    function Generate(const aIndent: String): String; override;
   end;
 
   TBaseSemanticYamlList = class(TList<TBaseSemanticYaml>)
   public
-    function Generate(const aIndent: string): string;
+    function Generate(const aIndent: String): String;
 
     function AddNewItem: TSemanticItemYaml;
     function AddNewParent: TSemanticParentYaml;
@@ -34,7 +34,7 @@ type
   public
     a: Integer;
     b: Integer;
-    function Generate(const aIndent: string): string; override;
+    function Generate(const aIndent: String): String; override;
   end;
 
   //locationSpan : {start: [1,0], end: [19,4]}
@@ -45,7 +45,7 @@ type
   public
     start: TSemanticSpan;
     end_ : TSemanticSpan;
-    function Generate(const aIndent: string): string; override;
+    function Generate(const aIndent: String): String; override;
   end;
 
   (* ---
@@ -65,7 +65,7 @@ type
     footerSpan: TSemanticSpan;
     parsingErrorsDetected: Boolean;
     children: TBaseSemanticYamlList;
-    function Generate(const aIndent: string): string; override;
+    function Generate(const aIndent: String): String; override;
   end;
 
   (*  - type : unit
@@ -80,7 +80,7 @@ type
   public
     locationSpan: TSemanticLocationSpan;
     span: TSemanticSpan;
-    function Generate(const aIndent: string): string; override;
+    function Generate(const aIndent: String): String; override;
   end;
 
   (*   - type : interface
@@ -99,7 +99,7 @@ type
     headerSpan: TSemanticSpan;
     footerSpan: TSemanticSpan;
     children: TBaseSemanticYamlList;
-    function Generate(const aIndent: string): string; override;
+    function Generate(const aIndent: String): String; override;
   end;
 
 implementation

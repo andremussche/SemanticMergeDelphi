@@ -7,19 +7,19 @@ uses
   CastaliaSimplePasPar, SemanticYaml, Generics.Collections;
 
 type
-  TStringEvent  = reference to procedure(const aText: string);
-  TReplaceEvent = reference to procedure(const aSearch, aReplace: string);
+  TStringEvent  = reference to procedure(const aText: String);
+  TReplaceEvent = reference to procedure(const aSearch, aReplace: String);
 
   TPas2YamlParser = class(TmwSimplePasPar)
   protected
-    FIndent: string;
-    procedure EnterHandler(const aName: string);
-    procedure ExitHandler(const aName: string);
+    FIndent: String;
+    procedure EnterHandler(const aName: String);
+    procedure ExitHandler(const aName: String);
   protected
-    FUnitName: string;
-    FCurrentType: string;
-    FObjectNameOfMethod: string;
-    FFunctionProcedureName: string;
+    FUnitName: String;
+    FCurrentType: String;
+    FObjectNameOfMethod: String;
+    FFunctionProcedureName: String;
     //FLastLine, FLastLineChar, FLastChar: Integer;
   private
     FOnDebugOutput: TStringEvent;
@@ -36,21 +36,21 @@ type
     procedure UpdateNextYamlLocation(aNode: TBaseSemanticYaml);
 
     var FCurrentMethod: TSemanticItemYaml;
-    function  ProcessItem_Before(const aType: string; aExactPos: Boolean; aDebugHandler: string): TSemanticItemYaml;
+    function  ProcessItem_Before(const aType: String; aExactPos: Boolean; aDebugHandler: String): TSemanticItemYaml;
     procedure ProcessItem_Next(const aItemYaml: TSemanticItemYaml; aExactPos: Boolean;
-      aDebugHandler: string);
+      aDebugHandler: String);
 
     var
       FParentRecursion: Integer;
       FParentStack: TStack<TSemanticParentYaml>;
-    function  ProcessParent_Before(const aType, aDebugHandler: string): TSemanticParentYaml;
+    function  ProcessParent_Before(const aType, aDebugHandler: String): TSemanticParentYaml;
     procedure ProcessParent_Next(const aParentYaml: TSemanticParentYaml; aIncludeLastLine: Boolean;
-      aDebugHandler: string);
+      aDebugHandler: String);
   public
     procedure  AfterConstruction; override;
     destructor Destroy; override;
 
-    procedure Run(aUnitName: string; SourceStream: TCustomMemoryStream); override;
+    procedure Run(aUnitName: String; SourceStream: TCustomMemoryStream); override;
 
     property  Yaml: TSemanticMasterYaml read GetYaml;
     property  OnDebugOutput: TStringEvent read FOnDebugOutput write FOnDebugOutput;
@@ -425,8 +425,8 @@ begin
   if FCurrentItem <> nil then
   begin
     FCurrentItem.locationSpan.end_.a := Lexer.LineNumber+1;
-    FCurrentItem.locationSpan.end_.b := Length(Lexer.Line);
-    FCurrentItem.span.b := Lexer.LinePos + Length(Lexer.Line);
+    FCurrentItem.locationSpan.end_.b := length(Lexer.Line);
+    FCurrentItem.span.b := Lexer.LinePos + length(Lexer.Line);
   end;
 end;
 

@@ -138,23 +138,27 @@ unit CastaliaSimplePasPar;
 interface
 
 uses
-  //!! pruned uses
+  {$IF NOT OXYGENE}
   SysUtils,
   Classes,
+  {$ENDIF}
   CastaliaPasLexTypes,
   CastaliaPasLex,
   CastaliaSimplePasParTypes;
-
+{$IF NOT OXYGENE}
 {$INCLUDE CastaliaParserDefines.inc}
+{$ENDIF}
 
 {$IFDEF GERMAN} // DR 2002-01-16
 resourcestring
   rsExpected = '''%s'' erwartet, aber ''%s'' gefunden';
   rsEndOfFile = 'Dateiende';
 {$ELSE}
-resourcestring
+  {$IF NOT OXYGENE}
+  resourcestring
   rsExpected = '''%s'' expected found ''%s''';
   rsEndOfFile = 'end of file';
+  {$ENDIF}
 {$ENDIF}
 
 const
@@ -178,7 +182,7 @@ type
   protected
 
   public
-    constructor Create(const Msg: string);
+    constructor Create(const Msg: String);
     constructor CreateFmt(const Msg: string; const Args: array of const);
     constructor CreatePos(const Msg: string; aPosXY: TTokenPoint);
     property PosXY: TTokenPoint read FPosXY write FPosXY;
@@ -530,12 +534,12 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure SynError(Error: TmwParseError); virtual;
-    procedure Run(UnitName: string; SourceStream: TCustomMemoryStream); virtual;
+    procedure Run(UnitName: String; SourceStream: TCustomMemoryStream); virtual;
 
     procedure InitDefines;
-    procedure AddDefine(const ADefine: string);
-    procedure RemoveDefine(const ADefine: string);
-    function IsDefined(const ADefine: string): Boolean;
+    procedure AddDefine(const ADefine: String);
+    procedure RemoveDefine(const ADefine: String);
+    function IsDefined(const ADefine: String): Boolean;
 
     property InterfaceOnly: Boolean read fInterfaceOnly write fInterfaceOnly;
     property Lexer: TmwPasLex read fLexer;
@@ -553,7 +557,7 @@ uses Windows;
 
 { ESyntaxError }
 
-constructor ESyntaxError.Create(const Msg: string);
+constructor ESyntaxError.Create(const Msg: String);
 begin
   // !! changed initialization for TTokenPoint
   FPosXY.X:= -1;
@@ -561,7 +565,7 @@ begin
   inherited Create(Msg);
 end;
 
-constructor ESyntaxError.CreateFmt(const Msg: string; const Args: array of const);
+constructor ESyntaxError.CreateFmt(const Msg: String; const Args: array of const);
 begin
   // !! changed initialization for TTokenPoint
   FPosXY.X:= -1;
@@ -569,7 +573,7 @@ begin
   inherited CreateFmt(Msg, Args);
 end;
 
-constructor ESyntaxError.CreatePos(const Msg: string; aPosXY: TTokenPoint);
+constructor ESyntaxError.CreatePos(const Msg: String; aPosXY: TTokenPoint);
 begin
   Message := Msg;
   FPosXY := aPosXY;
@@ -638,7 +642,7 @@ begin {jdj added method 02/07/2001}
   SEMICOLON;
 end;
 
-procedure TmwSimplePasPar.Run(UnitName: string; SourceStream: TCustomMemoryStream);
+procedure TmwSimplePasPar.Run(UnitName: String; SourceStream: TCustomMemoryStream);
 begin
   fStream := nil;
   fOwnStream := False;
