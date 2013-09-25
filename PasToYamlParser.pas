@@ -131,7 +131,7 @@ type
     procedure ContainsExpression; override;
     procedure ContainsIdentifier; override;
     procedure ContainsStatement; override;
-    {$IFDEF D8_NEWER OR OXYGENE}
+    {$IFDEF D8_NEWER}
     procedure CustomAttribute; override; //JThurman 2004-03-03
     {$ENDIF}
     procedure DeclarationSection; override;
@@ -1653,7 +1653,7 @@ begin
   unityaml.locationSpan.end_.a  := Lexer.LineNumber+1;
   unityaml.locationSpan.end_.b  := Lexer.AheadLex.RunPos;
   unityaml.span.a  := Lexer.LinePos;
-  unityaml.span.b  := Lexer.LinePos + Length(Lexer.Line);
+  unityaml.span.b  := Lexer.LinePos + length(Lexer.Line);
 
 //  FLastLine     := Lexer.LineNumber+1;
 //  FLastLineChar := Lexer.AheadLex.RunPos;
@@ -1668,7 +1668,7 @@ begin
 
   //end postion of file
   FYamlMaster.locationSpan.end_.a := Lexer.LineNumber+1;
-  FYamlMaster.locationSpan.end_.b := Length(Lexer.Line);
+  FYamlMaster.locationSpan.end_.b := length(Lexer.Line);
 end;
 
 procedure TPas2YamlParser.PointerType;
@@ -1753,7 +1753,7 @@ begin
 end;
   *)
 
-function TPas2YamlParser.ProcessItem_Before(const aType: string; aExactPos: Boolean; aDebugHandler: string): TSemanticItemYaml;
+function TPas2YamlParser.ProcessItem_Before(const aType: String; aExactPos: Boolean; aDebugHandler: String): TSemanticItemYaml;
 var itemyaml: TSemanticItemYaml;
 begin
   //     - type : method
@@ -1796,7 +1796,7 @@ begin
   Result := itemyaml;
 end;
 
-procedure TPas2YamlParser.ProcessItem_Next(const aItemYaml: TSemanticItemYaml; aExactPos: Boolean; aDebugHandler: string);
+procedure TPas2YamlParser.ProcessItem_Next(const aItemYaml: TSemanticItemYaml; aExactPos: Boolean; aDebugHandler: String);
 begin
   ExitHandler(aDebugHandler); //'ProcedureMethodName');
 
@@ -1811,8 +1811,8 @@ begin
     end
     else
     begin
-      aItemYaml.locationSpan.end_.b  := Length(Lexer.Line);
-      aItemYaml.span.b               := Lexer.LinePos + Length(Lexer.Line);
+      aItemYaml.locationSpan.end_.b  := length(Lexer.Line);
+      aItemYaml.span.b               := Lexer.LinePos + length(Lexer.Line);
     end;
   end
   //else start of next line (without first char at pos 0!)
@@ -1826,7 +1826,7 @@ begin
 end;
 
 function TPas2YamlParser.ProcessParent_Before(const aType,
-  aDebugHandler: string): TSemanticParentYaml;
+  aDebugHandler: String): TSemanticParentYaml;
 begin
   (*
   - type : implementation
@@ -1844,13 +1844,13 @@ begin
   else
     Result := FCurrentParent.children.AddNewParent;
   FParentStack.Push(Result);
-  Inc(FParentRecursion);
+  inc(FParentRecursion);
   Result.type_ := aType;
   Result.name  := Lexer.Token;
   Result.locationSpan.start.a := Lexer.LineNumber+1;
   Result.locationSpan.start.b := 0;
   Result.headerSpan.a  := Lexer.LinePos;
-  Result.headerSpan.b  := Lexer.LinePos + Length(Lexer.Line);
+  Result.headerSpan.b  := Lexer.LinePos + length(Lexer.Line);
 
   UpdatePrevYamlLocation(Result);
   FPrevItem := nil;  //no reverse setting end location for this item
@@ -1861,11 +1861,11 @@ begin
 end;
 
 procedure TPas2YamlParser.ProcessParent_Next(
-  const aParentYaml: TSemanticParentYaml; aIncludeLastLine: Boolean; aDebugHandler: string);
+  const aParentYaml: TSemanticParentYaml; aIncludeLastLine: Boolean; aDebugHandler: String);
 begin
   ExitHandler(aDebugHandler);
   //FCurrentParent := aParentYaml;
-  Dec(FParentRecursion);
+  dec(FParentRecursion);
   FParentStack.Pop();
   if FParentStack.Count > 0 then
     FCurrentParent := FParentStack.Peek
@@ -1877,7 +1877,7 @@ begin
   if (aParentYaml.locationSpan.start.a = aParentYaml.locationSpan.end_.a) or
      aIncludeLastLine then
   begin
-    aParentYaml.locationSpan.end_.b  := Length(Lexer.Line);
+    aParentYaml.locationSpan.end_.b  := length(Lexer.Line);
     //aParentYaml.span.b               := Lexer.LinePos + Length(Lexer.Line);
   end
   //else start of next line (without first char at pos 0!)
@@ -1897,7 +1897,7 @@ begin
   else
     aParentYaml.footerSpan.a := Lexer.LinePos;
   if aIncludeLastLine then
-    aParentYaml.footerSpan.b := Lexer.LinePos + Length(Lexer.Line)
+    aParentYaml.footerSpan.b := Lexer.LinePos + length(Lexer.Line)
   else
     aParentYaml.footerSpan.b := Lexer.LinePos-1;
 
@@ -2094,7 +2094,7 @@ begin
   ExitHandler('ReturnType');
 end;
 
-procedure TPas2YamlParser.Run(aUnitName: string; SourceStream: TCustomMemoryStream);
+procedure TPas2YamlParser.Run(aUnitName: String; SourceStream: TCustomMemoryStream);
 begin
   FYamlMaster.Free; //remove old
   FYamlMaster    := TSemanticMasterYaml.Create;
@@ -2752,18 +2752,18 @@ end;
 //    OnReplaceOutput(aSearch, aReplace);
 //end;
 
-procedure TPas2YamlParser.EnterHandler(const aName: string);
+procedure TPas2YamlParser.EnterHandler(const aName: String);
 begin
-  if Assigned(OnDebugOutput) then
+  if assigned(OnDebugOutput) then
     OnDebugOutput(Format('%s%s -> %s at %d:%d',
                          [FIndent, aName, Lexer.Token, Lexer.LineNumber+1, Lexer.LinePos]));
   FIndent := FIndent + '+ ';
 end;
 
-procedure TPas2YamlParser.ExitHandler(const aName: string);
+procedure TPas2YamlParser.ExitHandler(const aName: String);
 begin
-  FIndent := Copy(FIndent, 1, Length(FIndent)-2);
-  if Assigned(OnDebugOutput) then
+  FIndent := Copy(FIndent, 1, length(FIndent)-2);
+  if assigned(OnDebugOutput) then
     OnDebugOutput(Format('%s%s <- %s at %d:%d',
                          [FIndent, aName, Lexer.Token, Lexer.LineNumber+1, Lexer.LinePos]));
 end;

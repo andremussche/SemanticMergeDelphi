@@ -131,7 +131,7 @@ begin
   inherited;
 end;
 {$ENDIF}
-function TSemanticLocationSpan.Generate(const aIndent: string): string;
+function TSemanticLocationSpan.Generate(const aIndent: String): String;
 begin
   //Result := inherited Generate(aIndent);
   //locationSpan : {start: [1,0], end: [19,4]}
@@ -155,7 +155,7 @@ begin
   inherited;
 end;
 {$ENDIF}
-function TSemanticItemYaml.Generate(const aIndent: string): string;
+function TSemanticItemYaml.Generate(const aIndent: String): String;
 begin
   (*  - type : unit
         name : Unit1
@@ -187,7 +187,7 @@ begin
   inherited;
 end;
 {$ENDIF}
-function TSemanticParentYaml.Generate(const aIndent: string): string;
+function TSemanticParentYaml.Generate(const aIndent: String): String;
 begin
   (*   - type : interface
          name : interface
@@ -207,7 +207,7 @@ end;
 
 { TBaseSemanticYaml }
 
-function TBaseSemanticYaml.Generate(const aIndent: string): string;
+function TBaseSemanticYaml.Generate(const aIndent: String): String;
 begin
   if aIndent = '' then
   begin
@@ -216,7 +216,7 @@ begin
   end
   else
   begin
-    Result := Copy(aIndent, 1, Length(aIndent)-2) +
+    Result := Copy(aIndent, 1, length(aIndent)-2) +
               '- '    + 'type : '+ type_ + #13#10;   //    - type: xyz
     Result := Result +
               aIndent + 'name : '+ name  + #13#10;   //      name: xyz
@@ -225,7 +225,7 @@ end;
 
 { TSemanticSpan }
 
-function TSemanticSpan.Generate(const aIndent: string): string;
+function TSemanticSpan.Generate(const aIndent: String): String;
 begin
   //[0, -1]
   Result := aIndent + Format('[%d, %d]', [a, b]);
@@ -249,7 +249,7 @@ begin
   inherited;
 end;
 {$ENDIF}
-function TSemanticMasterYaml.Generate(const aIndent: string): string;
+function TSemanticMasterYaml.Generate(const aIndent: String): String;
 begin
   (* ---
      type : file
@@ -283,8 +283,10 @@ begin
   Self.Add(Result);
 end;
 
-function TBaseSemanticYamlList.Generate(const aIndent: string): string;
+function TBaseSemanticYamlList.Generate(const aIndent: String): String;
+{$IFDEF NOT OXYGENE}
 var item: TBaseSemanticYaml;
+{$ENDIF}
 begin
   if Self.Count = 0 then Exit('');
 

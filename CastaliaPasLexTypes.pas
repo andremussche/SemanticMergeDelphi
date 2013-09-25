@@ -40,11 +40,11 @@ type
     Y : Integer;
   end;
 
-{$IF NOT OXYGENE}
-  TptTokenKind = (
-{$ELSE}
+  {$IFDEF OXYGENE}
   TptTokenKind = public enum(
-{$ENDIF}
+  {$ELSE}
+  TptTokenKind = (
+  {$ENDIF}
     ptAbort, //JThurman 2004-11-8 (flow control routines)
     ptAbsolute,
     ptAbstract,
@@ -117,7 +117,7 @@ type
     ptExternal,
     ptFar,
   	ptFile,
-  {$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-03-20
+  {$IFDEF D8_NEWER} //JThurman 2004-03-20
     ptFinal,
   {$ENDIF}
     ptFinalization,
@@ -130,7 +130,7 @@ type
     ptGreater,
     ptGreaterEqual,
     ptHalt, //JThurman 2004-11-8 (flow control routines)
-  {$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-04-06
+  {$IFDEF D8_NEWER} //JThurman 2004-04-06
     ptHelper,
   {$ENDIF}
     ptIdentifier,
@@ -177,7 +177,7 @@ type
     ptOf,
     ptOleVariant,
     ptOn,
-    {$IFDEF D8_NEWER  OR OXYGENE} //JThurman 2004-03-20
+    {$IFDEF D8_NEWER} //JThurman 2004-03-20
     ptOperator,
     {$ENDIF}
     ptOr,
@@ -205,7 +205,7 @@ type
     ptReal,
     ptReal48,
     ptRecord,
-    {$IFDEF D12_NEWER  OR OXYGENE}
+    {$IFDEF D12_NEWER}
     ptReference, //JThurman 2008-25-07 (anonymous methods)
     {$ENDIF}
     ptRegister,
@@ -220,7 +220,7 @@ type
     ptRoundOpen,
     ptRunError, //JThurman 2004-11-8 (flow control routines)
     ptSafeCall,
-    {$IFDEF D8_NEWER  OR OXYGENE} //JThurman 2004-03-19
+    {$IFDEF D8_NEWER} //JThurman 2004-03-19
     ptSealed,
     {$ENDIF}
     ptSemiColon,
@@ -237,12 +237,12 @@ type
     ptSquareClose,
     ptSquareOpen,
     ptStar,
-    {$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-03-20
+    {$IFDEF D8_NEWER} //JThurman 2004-03-20
     ptStatic,
     {$ENDIF}
     ptStdcall,
     ptStored,
-    {$IFDEF D8_NEWER  OR OXYGENE}
+    {$IFDEF D8_NEWER}
     ptStrict, //JThurman 2004-03-03
     {$ENDIF}
     ptString,
@@ -258,7 +258,7 @@ type
     ptUndefDirect,
     ptUnit,
     ptUnknown,
-    {$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-03-2003
+    {$IFDEF D8_NEWER} //JThurman 2004-03-2003
     ptUnsafe,
     {$ENDIF}
     ptUntil,
@@ -290,7 +290,7 @@ end;
 {$IF NOT OXYGENE}
   const ExTypes = [ptDWORD, ptUnknown];
 {$ELSE}
-  const ExTypes = [TptTokenKind.ptDWORD, TptTokenKind.ptUnknown];
+  const ExTypes: array of TptTokenKind = [TptTokenKind.ptDWORD, TptTokenKind.ptUnknown];
 {$ENDIF}
 
 function TokenName(Value: TptTokenKind): String;
@@ -306,21 +306,25 @@ end;
 
 function ptTokenName(Value: TptTokenKind): String;
 begin
+  {$IF NOT OXYGENE}
   result := GetEnumName(TypeInfo(TptTokenKind), Integer(Value));
+  {$ELSE}
+  result := Value.ToString();
+  {$ENDIF}
 end;
 
 function IsTokenIDJunk(const aTokenID : TptTokenKind ) :Boolean; //XM 20001210
 begin
-  Result := aTokenID in [ptAnsiComment, ptBorComment, ptCRLF, ptCRLFCo, ptSlashesComment, ptSpace,
-    ptIfDirect,
-    ptIfEndDirect,
-    ptElseIfDirect,
-    ptIfDefDirect,
-    ptIfNDefDirect,
-    ptEndIfDirect,
-    ptIfOptDirect,
-    ptDefineDirect,
-    ptUndefDirect];
+  Result := aTokenID in [TptTokenKind.ptAnsiComment, TptTokenKind.ptBorComment, TptTokenKind.ptCRLF, TptTokenKind.ptCRLFCo, TptTokenKind.ptSlashesComment, TptTokenKind.ptSpace,
+    TptTokenKind.ptIfDirect,
+    TptTokenKind.ptIfEndDirect,
+    TptTokenKind.ptElseIfDirect,
+    TptTokenKind.ptIfDefDirect,
+    TptTokenKind.ptIfNDefDirect,
+    TptTokenKind.ptEndIfDirect,
+    TptTokenKind.ptIfOptDirect,
+    TptTokenKind.ptDefineDirect,
+    TptTokenKind.ptUndefDirect];
 end;
 
 
