@@ -203,7 +203,6 @@ type
     function Func167: TptTokenKind;
     function Func168: TptTokenKind;
     function Func191: TptTokenKind;
-    function Func192: TptTokenKind;
     function AltFunc: TptTokenKind;
     procedure InitIdent;
     function GetPosXY: TTokenPoint; // !! changed to TokenPoint //jdj 7/18/1999
@@ -539,7 +538,7 @@ procedure TmwBasePasLex.InitIdent;
 var
   I: Integer;
 begin
-  for I := 0 to 192 do
+  for I := 0 to 191 do
     {$IFDEF OXYGENE}
     case I of
       9: fIdentFuncTable[I] := @Func9;
@@ -632,7 +631,6 @@ begin
       167: fIdentFuncTable[I] := @Func167;
       168: fIdentFuncTable[I] := @Func168;
       191: fIdentFuncTable[I] := @Func191;
-      192: fIdentFuncTable[I] := @Func192;
     else fIdentFuncTable[I] := @AltFunc;
     end;
     {$ELSE}
@@ -735,7 +733,6 @@ begin
       167: fIdentFuncTable[I] := Func167;
       168: fIdentFuncTable[I] := Func168;
       191: fIdentFuncTable[I] := Func191;
-      192: fIdentFuncTable[I] := Func192;
     else fIdentFuncTable[I] := AltFunc;
     end;
     {$ENDIF}
@@ -1079,7 +1076,8 @@ end;
 function TmwBasePasLex.Func65: TptTokenKind;
 begin
   Result := TptTokenKind.ptIdentifier;
-  if KeyComp('Repeat') then Result := TptTokenKind.ptRepeat;
+  if KeyComp('Method') then Result := TptTokenKind.ptMethod else
+    if KeyComp('Repeat') then Result := TptTokenKind.ptRepeat;
 end;
 
 function TmwBasePasLex.Func66: TptTokenKind;
@@ -1412,12 +1410,6 @@ begin
   Result := TptTokenKind.ptIdentifier;
   if KeyComp('Resourcestring') then Result := TptTokenKind.ptResourcestring else
     if KeyComp('Stringresource') then fExID := TptTokenKind.ptStringresource;
-end;
-
-function TmwBasePasLex.Func192: TptTokenKind;
-begin
-  Result := TptTokenKind.ptIdentifier;
-  if KeyComp('Method') then Result := TptTokenKind.ptMethod;
 end;
 
 function TmwBasePasLex.AltFunc: TptTokenKind;
