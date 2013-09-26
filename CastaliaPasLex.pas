@@ -3196,11 +3196,7 @@ end;
 
 procedure TmwBasePasLex.SetLine(const Value: String);
 begin
-  {$IFDEF OXYGENE}
-  fOrigin := new PChar(Data := Value);
-  {$ELSE}
   fOrigin := PChar(Value);
-  {$ENDIF}
   InitLine;
   Next;
 end;
@@ -3558,7 +3554,7 @@ begin
 	inc(Run);
 end;
 
-{$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-04-06
+{$IFDEF D8_NEWER} //JThurman 2004-04-06
 procedure TmwBasePasLex.AmpersandOpProc;
 begin
   FTokenID := TptTokenKind.ptAmpersand;

@@ -5,23 +5,23 @@ interface
 Uses
   System.Collections.Generic;
 
-method &Copy(aString: String; aStart, aLength: Int32): String;
+  method &Copy(aString: String; aStart, aLength: Int32): String;
 
-method &Copy(aString: PChar; aStart, aLength: Int32): String;
+  method &Copy(aString: PChar; aStart, aLength: Int32): String;
 
-method Pos(aSubString: String; aString: String): Int32;
+  method Pos(aSubString: String; aString: String): Int32;
 
-method SetString(var TargetString: String; BufferPointer: PChar; aLength: Integer);
+  method SetString(var TargetString: String; BufferPointer: PChar; aLength: Integer);
 
-method UpperCase(aString: String): String;
+  method UpperCase(aString: String): String;
 
-method LowerCase(aString: String): String;
+  method LowerCase(aString: String): String;
 
-method CharInSet(C: Char; CharSet: array of Char): Boolean;
+  method CharInSet(C: Char; CharSet: array of Char): Boolean;
 
-method BoolToStr(aBoolean, UseBoolStrs: Boolean): String;
+  method BoolToStr(aBoolean, UseBoolStrs: Boolean): String;
 
-const MaxInt: Integer = Integer.MaxValue;
+  const MaxInt: Integer = Integer.MaxValue;
 
 type
     TObject = Object;
@@ -37,6 +37,7 @@ type
       property Char[aIndex: Integer]: Char read get_Char; default;
       property CurChar: Char read Data[Position];
       class operator &Add(val1: PChar; val2: Int32): PChar;
+      class operator Explicit(val1: String): PChar;
     end;
 
     ByteBool = Boolean;
@@ -136,6 +137,11 @@ class operator PChar.Add(val1: PChar; val2: Int32): PChar;
 begin
   result := val1;
   result.Position := result.Position + val2;
+end;
+
+class operator PChar.Explicit(val1: String): PChar;
+begin
+  result := new PChar(Data := val1);
 end;
 
 end.

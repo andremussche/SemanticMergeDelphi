@@ -721,7 +721,7 @@ begin
   fLexer.OnIfDirect := HandlePtIfDirect;
   fLexer.OnIfEndDirect := HandlePtIfEndDirect;
   fLexer.OnElseIfDirect := HandlePtElseIfDirect;
-   {$ENDIF}
+  {$ENDIF}
   FDefines := TStringList.Create;
   {$IF NOT OXYGENE}
   with TStringList(FDefines) do
