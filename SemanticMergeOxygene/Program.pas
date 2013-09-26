@@ -54,14 +54,20 @@ begin
     // Write the "flagfile" when you're ready
     if sFlagFile <> '' then File.WriteAllText(sFlagFile, 'READY');
     //debug:
-    File.AppendAllText('debug.log', 'READY'#13);
+    File.AppendAllText('debug.log', 'READY' + #13);
 
     // Loop until Semantic writes "end"
     if bShell then sLine := Console.ReadLine();
     //debug:
     File.AppendAllText('debug.log', 'Received line: ' + sLine +#13);
-    while sLine <> 'end' do
+    while sLine.ToLower() <> 'end' do
     begin
+      var files := sLine.Split([' ']);
+      if files.Length > 1 then
+      begin
+        sFileToParse := files[0];
+        sOutputFile  := files[1];
+      end;
       // read the file to parse first
       if sFileToParse = '' then sFileToParse := sLine;
       // then where to put the resulting tree
