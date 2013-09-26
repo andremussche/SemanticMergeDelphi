@@ -163,6 +163,7 @@ type
     ptLower,
     ptLowerEqual,
     ptMessage,
+    ptMethod,
     ptMinus,
     ptMod,
     ptName,
