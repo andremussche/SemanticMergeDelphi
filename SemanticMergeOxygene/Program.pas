@@ -50,7 +50,7 @@ begin
     end;
 
     //create stuff
-    parser     := TPas2YamlParser.Create;
+    parser := new TPas2YamlParser;
     // Write the "flagfile" when you're ready
     if sFlagFile <> '' then File.WriteAllText(sFlagFile, 'READY');
     //debug:
