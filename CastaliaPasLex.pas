@@ -70,7 +70,6 @@ type
   end;
 
   {$IF OXYGENE}
-  TObjectDelegate = delegate();
   TTptTokenKindDelegate = delegate: TptTokenKind; 
   {$ENDIF}  
 
@@ -78,7 +77,7 @@ type
   private
     fDirectiveParamOrigin: PChar;
     {$IF OXYGENE}
-    fProcTable: array[#0..#255] of TObjectDelegate;
+    fProcTable: array[#0..#255] of Delegate;
     fIdentFuncTable: array[0..191] of TTptTokenKindDelegate; 
     {$ELSE}
     fProcTable: array[#0..#255] of procedure of object;
@@ -765,16 +764,23 @@ begin
     Result := True;
     {$IF OXYGENE}
     for i: Int32 := 0 to TokenLen - 1 do
+    begin
+      if mHashTable[Temp.CurChar] <> mHashTable[aKey[i]] then
     {$ELSE}
     for I := 1 to TokenLen do 
-    {$ENDIF}
     begin
       if mHashTable[Temp^] <> mHashTable[aKey[i]] then
+    {$ENDIF}
+    
       begin
         Result := False;
         break;
       end;
+      {$IF OXYGENE}
+      Temp.Position := Temp.Position + 1;
+      {$ELSE}
       inc(Temp);
+      {$ENDIF}
     end;
   end
   else Result := False;
@@ -932,69 +938,38 @@ end;
 
 function TmwBasePasLex.Func33: TptTokenKind;
 begin
-  {$IF OXYGENE}
   Result := TptTokenKind.ptIdentifier;
   if KeyComp('Or') then Result := TptTokenKind.ptOr else
     if KeyComp('Name') then fExID := TptTokenKind.ptName else
       if KeyComp('Asm') then Result := TptTokenKind.ptAsm;
-  {$ELSE}
-  Result := ptIdentifier;
-  if KeyComp('Or') then Result := ptOr else
-    if KeyComp('Name') then fExID := ptName else
-      if KeyComp('Asm') then Result := ptAsm;
-  {$ENDIF}  
 end;
 
 function TmwBasePasLex.Func35: TptTokenKind;
 begin
-  {$IF OXYGENE}
   Result := TptTokenKind.ptIdentifier;
   if KeyComp('Nil') then Result := TptTokenKind.ptNil else
     if KeyComp('To') then Result := TptTokenKind.ptTo else
       if KeyComp('Div') then Result := TptTokenKind.ptDiv;
-  {$ELSE}
-  Result := ptIdentifier;
-  if KeyComp('Nil') then Result := ptNil else
-    if KeyComp('To') then Result := ptTo else
-      if KeyComp('Div') then Result := ptDiv;
-  {$ENDIF}  
 end;
 
 function TmwBasePasLex.Func36: TptTokenKind;
 begin
-  {$IF OXYGENE}
   Result := TptTokenKind.ptIdentifier;
   if KeyComp('Real') then fExID := TptTokenKind.ptReal else
     if KeyComp('Real48') then fExID := TptTokenKind.ptReal48;
-  {$ELSE}
-  Result := ptIdentifier;
-  if KeyComp('Real') then fExID := ptReal else
-    if KeyComp('Real48') then fExID := ptReal48;
-  {$ENDIF}
 end;
 
 function TmwBasePasLex.Func37: TptTokenKind;
 begin
-  {$IF OXYGENE}
   Result := TptTokenKind.ptIdentifier;
   if KeyComp('Begin') then Result := TptTokenKind.ptBegin else
     if KeyComp('Break') then fExID := TptTokenKind.ptBreak;
-  {$ELSE}
-  Result := ptIdentifier;
-  if KeyComp('Begin') then Result := ptBegin else
-    if KeyComp('Break') then fExID := ptBreak;
-  {$ENDIF} 
 end;
 
 function TmwBasePasLex.Func38: TptTokenKind;
 begin
-  {$IF OXYGENE}
   Result := TptTokenKind.ptIdentifier;
   if KeyComp('Near') then fExID := TptTokenKind.ptNear;
-  {$ELSE}
-  Result := ptIdentifier;
-  if KeyComp('Near') then fExID := ptNear;
-  {$ENDIF} 
 end;
 
 function TmwBasePasLex.Func39: TptTokenKind;
@@ -1090,7 +1065,6 @@ end;
 
 function TmwBasePasLex.Func46: TptTokenKind;
 begin
-  {$IF OXYGENE}
    Result := TptTokenKind.ptIdentifier;
   if KeyComp('PChar') then fExID := TptTokenKind.ptPChar
   {$IFDEF D8_NEWER} //JThurman 2004-03-19
@@ -1098,17 +1072,7 @@ begin
     if KeyComp('Sealed') then Result := TptTokenKind.ptSealed;
   {$ELSE}
   ;
-  {$ENDIF}
-  {$ELSE}
-   Result := ptIdentifier;
-  if KeyComp('PChar') then fExID := ptPChar
-  {$IFDEF D8_NEWER} //JThurman 2004-03-19
-   else
-    if KeyComp('Sealed') then Result := ptSealed;
-  {$ELSE}
-  ;
-  {$ENDIF}
-  {$ENDIF}
+  {$ENDIF} 
 end;
 
 function TmwBasePasLex.Func47: TptTokenKind;
@@ -1152,54 +1116,30 @@ end;
 
 function TmwBasePasLex.Func54: TptTokenKind;
 begin
-  {$IF OXYGENE}
   Result := TptTokenKind.ptIdentifier;
   if KeyComp('Class') then Result := TptTokenKind.ptClass;
-  {$ELSE}
-  Result := ptIdentifier;
-  if KeyComp('Class') then Result := ptClass;
-  {$ENDIF}  
 end;
 
 function TmwBasePasLex.Func55: TptTokenKind;
 begin
-  {$IF OXYGENE}
   Result := TptTokenKind.ptIdentifier;
   if KeyComp('Object') then Result := TptTokenKind.ptObject;
-  {$ELSE}
-  Result := ptIdentifier;
-  if KeyComp('Object') then Result := ptObject;
-  {$ENDIF}
 end;
 
 function TmwBasePasLex.Func56: TptTokenKind;
 begin
-  {$IF OXYGENE}
   Result := TptTokenKind.ptIdentifier;
   if KeyComp('Index') then fExID := TptTokenKind.ptIndex else
     if KeyComp('Out') then fExID := TptTokenKind.ptOut else // bug in Delphi's documentation: OUT is a directive
       if KeyComp('Abort') then fExID := TptTokenKind.ptAbort;
-  {$ELSE}
-  Result := ptIdentifier;
-  if KeyComp('Index') then fExID := ptIndex else
-    if KeyComp('Out') then fExID := ptOut else // bug in Delphi's documentation: OUT is a directive
-      if KeyComp('Abort') then fExID := ptAbort;
-  {$ENDIF}  
 end;
 
 function TmwBasePasLex.Func57: TptTokenKind;
 begin
-  {$IF OXYGENE}
   Result := TptTokenKind.ptIdentifier;
   if KeyComp('While') then Result := TptTokenKind.ptWhile else
     if KeyComp('Xor') then Result := TptTokenKind.ptXor else
       if KeyComp('Goto') then Result := TptTokenKind.ptGoto;
-  {$ELSE}
-  Result := ptIdentifier;
-  if KeyComp('While') then Result := ptWhile else
-    if KeyComp('Xor') then Result := ptXor else
-      if KeyComp('Goto') then Result := ptGoto;
-  {$ENDIF} 
 end;
 
 function TmwBasePasLex.Func58: TptTokenKind;
@@ -2082,7 +2022,9 @@ end;
 constructor TmwBasePasLex.Create;
 begin
   inherited Create;
+  {$IF NOT OXYGENE}
   fOrigin := nil;
+  {$ENDIF}
   InitIdent;
   MakeMethodTables;
   fExID := TptTokenKind.ptUnknown;
@@ -2221,11 +2163,8 @@ begin
 	case fOrigin[Run] of
 	  '}':
 		begin
-      {$IF OXYGENE}
-      fCommentState := TCommentState.csNo;
-      {$ELSE}
-      fCommentState := csNo;
-      {$ENDIF}		  
+  
+      fCommentState := TCommentState.csNo;		  
 		  inc(Run);
 		  break;
 		end;
@@ -2253,26 +2192,17 @@ begin
   case fOrigin[Run + 1] of
     '$': FTokenID := GetDirectiveKind;
   else
-    begin
-      {$IF OXYGENE}
+    begin     
       FTokenID := TptTokenKind.ptBorComment;
       fCommentState := TCommentState.csBor;
-      {$ELSE}
-      FTokenID := ptBorComment;
-      fCommentState := csBor;
-      {$ENDIF}   
     end;
   end;
   inc(Run);
   while fOrigin[Run] <> #0 do
     case fOrigin[Run] of
       '}':
-        begin
-          {$IF OXYGENE}
-          fCommentState := TCommentState.csNo;
-          {$ELSE}
-          fCommentState := csNo;
-          {$ENDIF}         
+        begin        
+          fCommentState := TCommentState.csNo;     
           inc(Run);
           break;
 		end;
@@ -2292,31 +2222,19 @@ begin
     else inc(Run);
     end;
   case FTokenID of
-    {$IF OXYGENE}
     TptTokenKind.ptCompDirect:
-    {$ELSE}
-    PtCompDirect:
-    {$ENDIF}
       begin
         if assigned(fOnCompDirect) then
           fOnCompDirect(Self);
       end;
-    {$IF OXYGENE}
-    TptTokenKind.ptDefineDirect:
-    {$ELSE}
-    PtDefineDirect:
-    {$ENDIF}  
+    TptTokenKind.ptDefineDirect: 
       begin
         if FUseDefines then
           AddDefine(DirectiveParam);
         if assigned(fOnDefineDirect) then
           fOnDefineDirect(Self);
       end;
-    {$IF OXYGENE}
     TptTokenKind.ptElseDirect:
-    {$ELSE}
-    PtElseDirect:
-    {$ENDIF}   
       begin
         if FUseDefines then
         begin
@@ -2332,11 +2250,7 @@ begin
         if assigned(fOnElseDirect) then
           fOnElseDirect(Self);
       end;
-    {$IF OXYGENE}
     TptTokenKind.ptEndIfDirect:
-    {$ELSE}
-    PtEndIfDirect:
-    {$ENDIF}   
       begin
         if FUseDefines then
           ExitDefineBlock;
@@ -2465,28 +2379,16 @@ end;
 
 procedure TmwBasePasLex.ColonProc;
 begin
-  {$IF OXYGENE}
-  case fOrigin[Run] of
-  {$ELSE}
   case fOrigin[Run + 1] of
-  {$ENDIF}
     '=':
       begin
-        inc(Run, 2);
-        {$IF OXYGENE}
-        FTokenID := TptTokenKind.ptAssign;
-        {$ELSE}
-        FTokenID := ptAssign;
-        {$ENDIF}
+        inc(Run, 2);       
+        FTokenID := TptTokenKind.ptAssign;       
 	  end;
   else
     begin
-      inc(Run);
-      {$IF OXYGENE}
-      FTokenID := TptTokenKind.ptColon; 
-      {$ELSE}
-      FTokenID := ptColon;
-      {$ENDIF}   
+      inc(Run);  
+      FTokenID := TptTokenKind.ptColon;  
     end;
   end;
 end;
@@ -2494,32 +2396,17 @@ end;
 procedure TmwBasePasLex.CommaProc;
 begin
   inc(Run);
-  {$IF OXYGENE}
   FTokenID := TptTokenKind.ptComma;
-  {$ELSE}
-  FTokenID := ptComma;
-  {$ENDIF}
 end;
 
 procedure TmwBasePasLex.CRProc;
 begin
-  {$IF OXYGENE}
   case fCommentState of
     TCommentState.csBor: FTokenID := TptTokenKind.ptCRLFCo;
     TCommentState.csAnsi: FTokenID := TptTokenKind.ptCRLFCo;
   else FTokenID := TptTokenKind.ptCRLF;
-  {$ELSE}
-  case fCommentState of
-    csBor: FTokenID := ptCRLFCo;
-    csAnsi: FTokenID := ptCRLFCo;
-  else FTokenID := ptCRLF;
-  {$ENDIF} 
   end;
-  {$IF OXYGENE}
-  case fOrigin[Run] of
-  {$ELSE}
   case fOrigin[Run + 1] of
-  {$ENDIF} 
     #10: inc(Run, 2);
   else inc(Run);
   end;
@@ -3310,7 +3197,7 @@ end;
 procedure TmwBasePasLex.SetLine(const Value: String);
 begin
   {$IFDEF OXYGENE}
-  fOrigin := PChar(Value[0]);
+  fOrigin := new PChar(Data := Value);
   {$ELSE}
   fOrigin := PChar(Value);
   {$ENDIF}

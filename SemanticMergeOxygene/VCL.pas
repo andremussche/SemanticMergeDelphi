@@ -11,7 +11,7 @@ method &Copy(aString: PChar; aStart, aLength: Int32): String;
 
 method Pos(aSubString: String; aString: String): Int32;
 
-method SetString(var TargetString: String; BufferPointer: PChar; Length: Integer);
+method SetString(var TargetString: String; BufferPointer: PChar; aLength: Integer);
 
 method UpperCase(aString: String): String;
 
@@ -26,9 +26,18 @@ const MaxInt: Integer = Integer.MaxValue;
 type
     TObject = Object;
 
-    PChar = ^Char;
-
     PString = ^String;
+
+    PChar = public record
+    private
+      method get_Char(aIndex : Integer): Char;
+    public
+      Data: String;
+      Position: Integer;
+      property Char[aIndex: Integer]: Char read get_Char; default;
+      property CurChar: Char read Data[Position];
+      class operator &Add(val1: PChar; val2: Int32): PChar;
+    end;
 
     ByteBool = Boolean;
 
@@ -69,15 +78,9 @@ begin
   result := aString.Substring(aStart-1, aLength);
 end;
 
-method SetString(var TargetString: String; BufferPointer: PChar; Length: Integer);
+method SetString(var TargetString: String; BufferPointer: PChar; aLength: Integer);
 begin
-  var sb := new System.Text.StringBuilder(Length);
-  for i: Int32 := 1 to Length do
-  begin
-    sb.Append(BufferPointer^);
-    inc(BufferPointer);
-  end;
-  TargetString := sb.ToString();
+  TargetString := BufferPointer.Data.Substring(BufferPointer.Position, aLength);
 end;
 
 method UpperCase(aString: String): String;
@@ -93,13 +96,6 @@ begin
   end;
 end;
 
-method &Copy(aString: PChar; aStart: Int32; aLength: Int32): String;
-begin
-  var ptr: PString;
-  ptr := PString(aString);
-  result := &Copy(ptr^, aStart, aLength);
-end;
-
 method LowerCase(aString: String): String;
 begin
   exit aString.ToLower();
@@ -108,6 +104,11 @@ end;
 method BoolToStr(aBoolean, UseBoolStrs: Boolean): String;
 begin
   exit aBoolean.ToString();
+end;
+
+method &Copy(aString: PChar; aStart: Int32; aLength: Int32): String;
+begin
+  result := &Copy(aString.Data, aStart, aLength);
 end;
 
 method TStrings.Delete(aElement: String);
@@ -123,6 +124,18 @@ end;
 method TCustomMemoryStream.get_Size: Int32;
 begin
   exit self.Length;
+end;
+
+method PChar.get_Char(aIndex : Integer): Char;
+begin
+  //if aIndex > (self.Data.Length - 1) then exit #0;
+  result := self.Data[aIndex];
+end;
+
+class operator PChar.Add(val1: PChar; val2: Int32): PChar;
+begin
+  result := val1;
+  result.Position := result.Position + val2;
 end;
 
 end.

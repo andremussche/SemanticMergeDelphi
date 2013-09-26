@@ -27,7 +27,6 @@
     <DefineConstants>DEBUG;TRACE;D8_NEWER;D9_NEWER;D11_NEWER;D12_NEWER</DefineConstants>
     <GeneratePDB>True</GeneratePDB>
     <GenerateMDB>True</GenerateMDB>
-    <CaptureConsoleOutput>False</CaptureConsoleOutput>
     <StartMode>Project</StartMode>
     <CpuType>anycpu</CpuType>
     <RuntimeVersion>v25</RuntimeVersion>

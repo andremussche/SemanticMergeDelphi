@@ -541,12 +541,13 @@ type
     property TokenID: TptTokenKind read GetTokenID;
   public
     constructor Create;
-    {$IF NOT OXYGENE}
+    {$IF OXYGENE}
+    procedure Run(UnitName: String; Source: String); virtual;
+    {$ELSE}
     destructor Destroy; override;
+    procedure Run(UnitName: String; SourceStream: TCustomMemoryStream); virtual;
     {$ENDIF}
     procedure SynError(Error: TmwParseError); virtual;
-    procedure Run(UnitName: String; SourceStream: TCustomMemoryStream); virtual; {$IF OXYGENE}unsafe;{$ENDIF}
-
     procedure InitDefines;
     procedure AddDefine(const ADefine: String);
     procedure RemoveDefine(const ADefine: String);
@@ -565,7 +566,8 @@ type
 implementation
 
 uses 
-  System.Runtime.InteropServices;
+  System.Runtime.InteropServices, 
+  Microsoft.SqlServer.Server;
 {$IF NOT OXYGENE}
 uses Windows;
 {$ENDIF}
@@ -669,21 +671,15 @@ begin {jdj added method 02/07/2001}
   end;
   SEMICOLON;
 end;
-
+{$IFDEF OXYGENE}
+procedure TmwSimplePasPar.Run(UnitName: String; Source: String);
+begin 
+  fLexer.Origin := new PChar(Data := Source);
+  ParseFile;
+end;
+{$ELSE}
 procedure TmwSimplePasPar.Run(UnitName: String; SourceStream: TCustomMemoryStream);
-begin
-  {$IFDEF OXYGENE}
-  fStream := nil;
-  fOwnStream := false;
-  fStream := SourceStream;
-  TerminateStream;
-  using reader := new System.IO.StreamReader(SourceStream, System.Text.Encoding.UTF8) do
-  begin
-    var str: String := reader.ReadToEnd();
-    fLexer.Origin := PChar(str[0]);
-    ParseFile;
-  end; 
-  {$ELSE}
+begin 
   fStream := nil;
   fOwnStream := False;
   fStream := SourceStream;
@@ -691,9 +687,8 @@ begin
   fLexer.Origin := fStream.Memory;
   ParseFile;
   if fOwnStream then fStream.Free;
-  {$ENDIF} 
 end;
-
+{$ENDIF} 
 constructor TmwSimplePasPar.Create;
 begin
   inherited Create;
@@ -1117,7 +1112,7 @@ begin
   fStream.Position := fStream.Size;
   aChar := #0;
   {$IFDEF OXYGENE}
-  fStream.Write([0], 0, 1);
+  //fStream.Write([0], 0, 1);
   {$ELSE}
   fStream.Write(aChar, sizeOf(char));
   {$ENDIF}

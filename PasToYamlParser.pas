@@ -50,11 +50,12 @@ type
       aDebugHandler: String);
   public
     procedure AfterConstruction; override;
-    {$IF NOT OXYGENE}
+    {$IF OXYGENE}
+    procedure Run(aUnitName: String; Source: String); override;
+    {$ELSE}
     destructor Destroy; override;
-    {$ENDIF}
     procedure Run(aUnitName: String; SourceStream: TCustomMemoryStream); override;
-
+    {$ENDIF}
     property  Yaml: TSemanticMasterYaml read GetYaml;
     property  OnDebugOutput: TStringEvent read FOnDebugOutput write FOnDebugOutput;
   protected {parser overrides, long list!}
@@ -2093,19 +2094,24 @@ begin
   inherited;
   ExitHandler('ReturnType');
 end;
-
-procedure TPas2YamlParser.Run(aUnitName: String; SourceStream: TCustomMemoryStream);
+{$IFDEF OXYGENE}
+procedure TPas2YamlParser.Run(aUnitName: String; Source: String);
 begin
-  {$IFDEF NOT OXYGENE}
-  FYamlMaster.Free; //remove old
-  {$ENDIF}
   FYamlMaster    := TSemanticMasterYaml.Create;
   FCurrentParent := nil;
-
   FUnitName := aUnitName;
   inherited;
 end;
-
+{$ELSE}
+procedure TPas2YamlParser.Run(aUnitName: String; SourceStream: TCustomMemoryStream);
+begin
+  FYamlMaster.Free; //remove old
+  FYamlMaster    := TSemanticMasterYaml.Create;
+  FCurrentParent := nil;
+  FUnitName := aUnitName;
+  inherited;
+end;
+{$ENDIF}
 procedure TPas2YamlParser.SetConstructor;
 begin
   EnterHandler('SetConstructor');
