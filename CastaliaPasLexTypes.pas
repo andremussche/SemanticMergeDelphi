@@ -19,7 +19,7 @@ unit CastaliaPasLexTypes;
 
 interface
 
-{$IF NOT OXYGENE}
+{$IFNDEF OXYGENE}
 uses SysUtils, TypInfo;
 
 {$INCLUDE CastaliaParserDefines.inc}
@@ -287,7 +287,7 @@ TmwPasLexStatus = record
   TokenPos: Integer;
   TokenID: TptTokenKind;
 end;
-{$IF NOT OXYGENE}
+{$IFNDEF OXYGENE}
   const ExTypes = [ptDWORD, ptUnknown];
 {$ELSE}
   const ExTypes: set of TptTokenKind = [TptTokenKind.ptDWORD, TptTokenKind.ptUnknown];
@@ -306,7 +306,7 @@ end;
 
 function ptTokenName(Value: TptTokenKind): String;
 begin
-  {$IF NOT OXYGENE}
+  {$IFNDEF OXYGENE}
   result := GetEnumName(TypeInfo(TptTokenKind), Integer(Value));
   {$ELSE}
   result := Value.ToString();

@@ -138,14 +138,14 @@ unit CastaliaSimplePasPar;
 interface
 
 uses
-  {$IF NOT OXYGENE}
+  {$IFNDEF OXYGENE}
   SysUtils,
   Classes,
   {$ENDIF}
   CastaliaPasLexTypes,
   CastaliaPasLex,
   CastaliaSimplePasParTypes;
-{$IF NOT OXYGENE}
+{$IFNDEF OXYGENE}
 {$INCLUDE CastaliaParserDefines.inc}
 {$ENDIF}
 
@@ -154,7 +154,7 @@ resourcestring
   rsExpected = '''%s'' erwartet, aber ''%s'' gefunden';
   rsEndOfFile = 'Dateiende';
 {$ELSE}
-  {$IF NOT OXYGENE}
+  {$IFNDEF OXYGENE}
   resourcestring
   rsExpected = '''%s'' expected found ''%s''';
   rsEndOfFile = 'end of file';
@@ -163,14 +163,14 @@ resourcestring
 
 const
 
- ClassMethodDirectiveEnum{$IF OXYGENE}: set of TptTokenKind{$ENDIF} = [TptTokenKind.ptAbstract, TptTokenKind.ptCdecl, TptTokenKind.ptDynamic, TptTokenKind.ptMessage, TptTokenKind.ptOverride,
+ ClassMethodDirectiveEnum{$IFDEF OXYGENE}: set of TptTokenKind{$ENDIF} = [TptTokenKind.ptAbstract, TptTokenKind.ptCdecl, TptTokenKind.ptDynamic, TptTokenKind.ptMessage, TptTokenKind.ptOverride,
     TptTokenKind.ptOverload, TptTokenKind.ptPascal, TptTokenKind.ptRegister, TptTokenKind.ptReintroduce, TptTokenKind.ptSafeCall, TptTokenKind.ptStdcall,
     TptTokenKind.ptVirtual,
     TptTokenKind.ptDeprecated, TptTokenKind.ptLibrary, TptTokenKind.ptPlatform // DR 2001-10-20
-    {$IFDEF D8_NEWER OR OXYGENE}
+    {$IFDEF D8_NEWER}
     , TptTokenKind.ptStatic //JThurman 2004-11-10
     {$ENDIF}
-    {$IFDEF D9_NEWER OR OXYGENE}
+    {$IFDEF D9_NEWER}
     , TptTokenKind.ptInline
     {$ENDIF}
     ];  //XM 2002-01-29
@@ -541,7 +541,7 @@ type
     property TokenID: TptTokenKind read GetTokenID;
   public
     constructor Create;
-    {$IF OXYGENE}
+    {$IFDEF OXYGENE}
     procedure Run(UnitName: String; Source: String); virtual;
     {$ELSE}
     destructor Destroy; override;
@@ -568,7 +568,7 @@ implementation
 uses 
   System.Runtime.InteropServices, 
   Microsoft.SqlServer.Server;
-{$IF NOT OXYGENE}
+{$IFNDEF OXYGENE}
 uses Windows;
 {$ENDIF}
 { ESyntaxError }
@@ -581,7 +581,7 @@ begin
   inherited Create(Msg);
 end;
 
-{$IF OXYGENE}
+{$IFDEF OXYGENE}
 constructor ESyntaxError.Create(const Msg: String; const Args: array of Object);
 {$ELSE}
 constructor ESyntaxError.CreateFmt(const Msg: String; const Args: array of const);
@@ -590,14 +590,14 @@ begin
   // !! changed initialization for TTokenPoint
   FPosXY.X:= -1;
   FPosXY.Y:= -1;
-  {$IF OXYGENE}
+  {$IFDEF OXYGENE}
   inherited constructor(Msg);
   {$ELSE}
   inherited CreateFmt(Msg, Args);
   {$ENDIF}
 end;
 
-{$IF OXYGENE}
+{$IFDEF OXYGENE}
 constructor ESyntaxError.Create(const Msg: String; aPosXY: TTokenPoint);
 begin
   inherited constructor(Msg);
@@ -723,7 +723,7 @@ begin
   fLexer.OnElseIfDirect := HandlePtElseIfDirect;
   {$ENDIF}
   FDefines := TStringList.Create;
-  {$IF NOT OXYGENE}
+  {$IFNDEF OXYGENE}
   with TStringList(FDefines) do
   begin
     Sorted := True;
@@ -738,7 +738,7 @@ begin
   {$ENDIF}
 end;
 
-{$IF NOT OXYGENE}
+{$IFNDEF OXYGENE}
 destructor TmwSimplePasPar.Destroy;
 begin
   ClearDefines; //Must do this here to avoid a memory leak
@@ -760,7 +760,7 @@ begin
       ExpectedFatal(Sym) {jdj 7/22/1999}
     else
     begin
-      {$IF NOT OXYGENE}
+      {$IFNDEF OXYGENE}
       if assigned(FOnMessage) then
         FOnMessage(Self, TMessageEventType.meError, Format(rsExpected, [TokenName(Sym), fLexer.Token]),
           fLexer.PosXY.X, fLexer.PosXY.Y);
@@ -777,7 +777,7 @@ begin
   begin
     if Lexer.TokenID = TptTokenKind.ptNull then
       ExpectedFatal(Sym) {jdj 7/22/1999}
-    {$IF OXYGENE};
+    {$IFDEF OXYGENE};
     {$ELSE}
     else if assigned(FOnMessage) then
       FOnMessage(Self, TMessageEventType.meError, Format(rsExpected, ['EX:' + TokenName(Sym), fLexer.Token]),
@@ -797,7 +797,7 @@ begin
   begin
     {--jdj 7/22/1999--}
     if Lexer.TokenID = TptTokenKind.ptNull then
-    {$IF OXYGENE}
+    {$IFDEF OXYGENE}
       tS := 'End of file'
     else
       tS := fLexer.Token;
@@ -1070,7 +1070,7 @@ begin
         begin
           SkipCRLF;
         end;
-      {$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-3-19
+      {$IFDEF D8_NEWER} //JThurman 2004-3-19
       TptTokenKind.ptSquareOpen:
         begin
           CustomAttribute;
@@ -1111,9 +1111,7 @@ var
 begin
   fStream.Position := fStream.Size;
   aChar := #0;
-  {$IFDEF OXYGENE}
-  //fStream.Write([0], 0, 1);
-  {$ELSE}
+  {$IFNDEF OXYGENE}
   fStream.Write(aChar, sizeOf(char));
   {$ENDIF}
 end;
@@ -1356,7 +1354,7 @@ end;
 
 procedure TmwSimplePasPar.UsedUnitName;
 begin
-  {$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-03-03
+  {$IFDEF D8_NEWER} //JThurman 2004-03-03
   Expected(TptTokenKind.ptIdentifier);
   while TokenID = TptTokenKind.ptPoint do
   begin
@@ -1372,7 +1370,7 @@ procedure TmwSimplePasPar.Block;
 begin
   while TokenID in [TptTokenKind.ptClass, TptTokenKind.ptConst, TptTokenKind.ptConstructor, TptTokenKind.ptDestructor, TptTokenKind.ptExports,
     TptTokenKind.ptFunction, TptTokenKind.ptLabel, TptTokenKind.ptProcedure, TptTokenKind.ptResourcestring, TptTokenKind.ptThreadvar, TptTokenKind.ptType,
-    TptTokenKind.ptVar{$IFDEF D8_NEWER OR OXYGENE}, TptTokenKind.ptSquareOpen{$ENDIF}] do
+    TptTokenKind.ptVar{$IFDEF D8_NEWER}, TptTokenKind.ptSquareOpen{$ENDIF}] do
   begin
     DeclarationSection;
   end;
@@ -1439,7 +1437,7 @@ begin
       begin
         VarSection;
       end;
-    {$IFDEF D8_NEWER OR OXYGENE} //JThurman
+    {$IFDEF D8_NEWER} //JThurman
     TptTokenKind.ptSquareOpen:
       begin
         CustomAttribute;
@@ -1502,7 +1500,7 @@ begin
       begin
         NextToken;
       end;
-    {$IFDEF D8_NEWER OR OXYGENE}
+    {$IFDEF D8_NEWER}
     TptTokenKind.ptAdd:
       begin
         NextToken;
@@ -1660,7 +1658,7 @@ begin
     IndexSpecifier; // DR 2001-07-26
   end;
   while ExID in [TptTokenKind.ptRead, TptTokenKind.ptReadonly, TptTokenKind.ptWrite, TptTokenKind.ptWriteonly
-    {$IFDEF D8_NEWER OR OXYGENE}, TptTokenKind.ptAdd, TptTokenKind.ptRemove{$ENDIF}] do
+    {$IFDEF D8_NEWER}, TptTokenKind.ptAdd, TptTokenKind.ptRemove{$ENDIF}] do
   begin
     AccessSpecifier;
   end;
@@ -1701,7 +1699,7 @@ begin
       begin
         DestructorHeading;
       end;
-    {$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-03-2003
+    {$IFDEF D8_NEWER} //JThurman 2004-03-2003
     TptTokenKind.ptFunction, TptTokenKind.ptIdentifier:
       begin
         if (TokenID = TptTokenKind.ptIdentifier) and (Lexer.ExID <> TptTokenKind.ptOperator) then
@@ -1745,7 +1743,7 @@ end;
 
 procedure TmwSimplePasPar.ClassFunctionHeading;
 begin
-  {$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-03-2003
+  {$IFDEF D8_NEWER} //JThurman 2004-03-2003
   if (TokenID = TptTokenKind.ptIdentifier) and (Lexer.ExID = TptTokenKind.ptOperator) then
     Expected(TptTokenKind.ptIdentifier) else
   {$ENDIF}
@@ -1812,7 +1810,7 @@ begin
       begin
         NextToken;
       end;
-    {$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-03-2003
+    {$IFDEF D8_NEWER} //JThurman 2004-03-2003
     TptTokenKind.ptIdentifier:
       begin
         if Lexer.ExID = TptTokenKind.ptOperator then
@@ -1982,10 +1980,10 @@ begin
     TptTokenKind.ptOverload, // DR 2001-08-07
     TptTokenKind.ptPascal, TptTokenKind.ptRegister, TptTokenKind.ptSafeCall, TptTokenKind.ptStdcall, TptTokenKind.ptVirtual,
     TptTokenKind.ptDeprecated, TptTokenKind.ptLibrary, TptTokenKind.ptPlatform // DR 2001-10-20
-    {$IFDEF D8_NEWER OR OXYGENE}
+    {$IFDEF D8_NEWER}
     , TptTokenKind.ptStatic
     {$ENDIF}
-    {$IFDEF D9_NEWER OR OXYGENE}
+    {$IFDEF D9_NEWER}
     , TptTokenKind.ptInline
     {$ENDIF}
     ] do
@@ -2054,7 +2052,7 @@ end;
 
 procedure TmwSimplePasPar.ReturnType;
 begin
-  {$IFDEF D8_NEWER OR OXYGENE}
+  {$IFDEF D8_NEWER}
   while TokenID = TptTokenKind.ptSquareOpen do
     CustomAttribute;
   {$ENDIF}
@@ -2084,7 +2082,7 @@ end;
 
 procedure TmwSimplePasPar.FormalParameterSection;
 begin
-  {$IFDEF D8_NEWER OR OXYGENE}//JThurman 2004-03-23
+  {$IFDEF D8_NEWER}//JThurman 2004-03-23
   while TokenID = TptTokenKind.ptSquareOpen do
     CustomAttribute;
   {$ENDIF}
@@ -2235,7 +2233,7 @@ end;
 
 procedure TmwSimplePasPar.FunctionMethodDeclaration;
 begin
-  {$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-03-2003
+  {$IFDEF D8_NEWER} //JThurman 2004-03-2003
   if (TokenID = TptTokenKind.ptIdentifier) and (Lexer.ExID = TptTokenKind.ptOperator) then
     NextToken else
   {$ENDIF}
@@ -2307,7 +2305,7 @@ end;
 procedure TmwSimplePasPar.ObjectNameOfMethod;
 begin
   Expected(TptTokenKind.ptIdentifier);
-  {$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-03-22
+  {$IFDEF D8_NEWER} //JThurman 2004-03-22
   if TokenID = TptTokenKind.ptLower then
     TypeParams;
   Lexer.InitAhead;
@@ -2337,10 +2335,10 @@ begin
       TptTokenKind.ptDeprecated, TptTokenKind.ptLibrary, TptTokenKind.ptPlatform, // DR 2001-10-20
       TptTokenKind.ptLocal, TptTokenKind.ptVarargs,
       TptTokenKind.ptAssembler //JT 2004-10-29
-      {$IFDEF D8_NEWER OR OXYGENE}
+      {$IFDEF D8_NEWER}
       , TptTokenKind.ptStatic
       {$ENDIF}
-      {$IFDEF D9_NEWER OR OXYGENE}
+      {$IFDEF D9_NEWER}
       , TptTokenKind.ptInline
       {$ENDIF}
        ] // DR 2001-11-14
@@ -2440,7 +2438,7 @@ procedure TmwSimplePasPar.ForStatement;
 begin
   Expected(TptTokenKind.ptFor);
   QualifiedIdentifier;
-  {$IFDEF D8_NEWER OR OXYGENE}
+  {$IFDEF D8_NEWER}
   if Lexer.TokenID = TptTokenKind.ptAssign then
   begin
     Expected(TptTokenKind.ptAssign);
@@ -2970,7 +2968,7 @@ begin //mw 12/7/2000
         while TokenID = TptTokenKind.ptPoint do
         begin //jdj 1/7/2001
           NextToken;
-          {$IFDEF D8_NEWER OR OXYGENE}
+          {$IFDEF D8_NEWER}
           if TokenID in [TptTokenKind.ptAnd, TptTokenKind.ptArray, TptTokenKind.ptAs, TptTokenKind.ptAsm, TptTokenKind.ptBegin, TptTokenKind.ptCase, TptTokenKind.ptClass,
             TptTokenKind.ptConst, TptTokenKind.ptConstructor, TptTokenKind.ptDestructor, TptTokenKind.ptDispinterface, TptTokenKind.ptDiv, TptTokenKind.ptDo,
             TptTokenKind.ptDownto, TptTokenKind.ptElse, TptTokenKind.ptEnd, TptTokenKind.ptExcept, TptTokenKind.ptExports, TptTokenKind.ptFile, TptTokenKind.ptFinal,
@@ -3492,7 +3490,7 @@ begin
   Expected(TptTokenKind.ptRecord);
   if TokenID = TptTokenKind.ptSemiColon then
     Exit;
-  {$IFDEF D8_NEWER OR OXYGENE}
+  {$IFDEF D8_NEWER}
   if TokenID = TptTokenKind.ptRoundOpen then
   begin
     ClassHeritage;
@@ -3939,7 +3937,7 @@ begin
           end;
         end;
       end;
-    {$IFDEF D11_NEWER OR OXYGENE}
+    {$IFDEF D11_NEWER}
     TptTokenKind.ptLower:
       begin
         InitAhead;
@@ -4161,7 +4159,7 @@ begin
   ClassVisibility;
   while TokenID in [TptTokenKind.ptClass, TptTokenKind.ptConstructor, TptTokenKind.ptDestructor, TptTokenKind.ptFunction,
     TptTokenKind.ptIdentifier, TptTokenKind.ptProcedure, TptTokenKind.ptProperty
-    {$IFDEF D8_NEWER OR OXYGENE}, TptTokenKind.ptType, TptTokenKind.ptSquareOpen, TptTokenKind.ptVar, TptTokenKind.ptConst, TptTokenKind.ptStrict,
+    {$IFDEF D8_NEWER}, TptTokenKind.ptType, TptTokenKind.ptSquareOpen, TptTokenKind.ptVar, TptTokenKind.ptConst, TptTokenKind.ptStrict,
      TptTokenKind.ptCase{$ENDIF}] do
   begin
     while (TokenID = TptTokenKind.ptIdentifier) and
@@ -5203,7 +5201,7 @@ begin
       TptTokenKind.ptReintroduce, TptTokenKind.ptSafeCall, TptTokenKind.ptStdcall, TptTokenKind.ptVirtual,
       TptTokenKind.ptDeprecated, TptTokenKind.ptLibrary, TptTokenKind.ptPlatform, // DR 2001-10-20
       TptTokenKind.ptLocal, TptTokenKind.ptVarargs // DR 2001-11-14
-      {$IFDEF D8_NEWER OR OXYGENE}, TptTokenKind.ptStatic{$ENDIF}{$IFDEF D9_NEWER}, TptTokenKind.ptInline{$ENDIF}
+      {$IFDEF D8_NEWER}, TptTokenKind.ptStatic{$ENDIF}{$IFDEF D9_NEWER}, TptTokenKind.ptInline{$ENDIF}
       ] do
     begin
       ProceduralDirective;
@@ -6060,7 +6058,7 @@ var
   StackFrame: PDefineRec;
 begin
   Exit;
-  {$IFDEF NOT OXYGENE}
+  {$IFNDEF OXYGENE}
   New(StackFrame);
   {$ENDIF}
   StackFrame^.Next := FTopDefineRec;
