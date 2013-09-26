@@ -1633,7 +1633,7 @@ begin
       begin
 		NullProc;
         if assigned(FOnMessage) then
-        {$IF OXYGENE}
+        {$IFDEF OXYGENE}
         FOnMessage(Self, TMessageEventType.meError, 'Unexpected file end', PosXY.X, PosXY.Y);
         {$ELSE}
         FOnMessage(Self, meError, 'Unexpected file end', PosXY.X, PosXY.Y);
@@ -1780,11 +1780,7 @@ begin
         if assigned(fOnIfEndDirect) then
           fOnIfEndDirect(Self);
       end;
-    {$IF OXYGENE}
-    TptTokenKind.ptElseIfDirect:
-    {$ELSE}
-    PtElseIfDirect:
-    {$ENDIF}  
+    TptTokenKind.ptElseIfDirect: 
       begin
         if FUseDefines then
         begin
@@ -1808,29 +1804,17 @@ begin
         if assigned(fOnElseIfDirect) then
           fOnElseIfDirect(Self);
       end;
-    {$IF OXYGENE}
-    TptTokenKind.ptIncludeDirect:
-    {$ELSE}
-    PtIncludeDirect:
-    {$ENDIF}   
+    TptTokenKind.ptIncludeDirect:  
       begin
         if assigned(fOnIncludeDirect) then
           fOnIncludeDirect(Self);
       end;
-    {$IF OXYGENE}
     TptTokenKind.ptResourceDirect:
-    {$ELSE}
-    PtResourceDirect:
-    {$ENDIF}
       begin
         if assigned(fOnResourceDirect) then
           fOnResourceDirect(Self);
       end;
-    {$IF OXYGENE}
     TptTokenKind.ptUndefDirect:
-    {$ELSE}
-    PtUndefDirect:
-    {$ENDIF}
       begin
         if FUseDefines then
           RemoveDefine(DirectiveParam);
@@ -1881,7 +1865,7 @@ procedure TmwBasePasLex.EnterDefineBlock(ADefined: Boolean);
 var
   StackFrame: PDefineRec;
 begin
-  {$IF OXYGENE} 
+  {$IFDEF OXYGENE} 
   var dr := new TDefineRec;
   StackFrame := @dr;
   {$ELSE}
@@ -1910,7 +1894,7 @@ begin
   begin
     FDefineStack := StackFrame^.StartCount;
     FTopDefineRec := StackFrame^.Next;
-    {$IF OXYGENE}
+    {$IFDEF OXYGENE}
     disposeAndNil(StackFrame);  
     {$ELSE}
     Dispose(StackFrame); 
@@ -2650,7 +2634,7 @@ begin
   Run := 0;
 end;
 
-{$IFDEF NOT OXYGENE}
+{$IFNDEF OXYGENE}
 procedure TmwBasePasLex.SetCommentState(const Value: Pointer);
 begin
   fCommentState := TCommentState(Value);

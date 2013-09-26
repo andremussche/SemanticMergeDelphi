@@ -3,7 +3,7 @@ unit PasToYamlParser;
 interface
 
 uses
-  {$IF NOT OXYGENE}
+  {$IFNDEF OXYGENE}
   Classes, Generics.Collections,
   {$ENDIF}
   CastaliaSimplePasPar, SemanticYaml;
@@ -50,7 +50,7 @@ type
       aDebugHandler: String);
   public
     procedure AfterConstruction; override;
-    {$IF OXYGENE}
+    {$IFDEF OXYGENE}
     procedure Run(aUnitName: String; Source: String); override;
     {$ELSE}
     destructor Destroy; override;
@@ -344,7 +344,7 @@ type
   end;
 
 implementation
-{$IF NOT OXYGENE}
+{$IFNDEF OXYGENE}
 uses
   SysUtils;
 {$ENDIF}
@@ -789,7 +789,7 @@ begin
   inherited;
   ExitHandler('Designator');
 end;
-{$IF NOT OXYGENE}
+{$IFNDEF OXYGENE}
 destructor TPas2YamlParser.Destroy;
 begin
   FParentStack.Free;
@@ -2097,7 +2097,7 @@ end;
 {$IFDEF OXYGENE}
 procedure TPas2YamlParser.Run(aUnitName: String; Source: String);
 begin
-  FYamlMaster    := TSemanticMasterYaml.Create;
+  FYamlMaster    := new TSemanticMasterYaml;
   FCurrentParent := nil;
   FUnitName := aUnitName;
   inherited;

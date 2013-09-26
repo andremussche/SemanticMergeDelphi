@@ -1,7 +1,7 @@
 unit SemanticYaml;
 
 interface
-{$IF NOT OXYGENE}
+{$IFNDEF OXYGENE}
 uses
   Generics.Collections;
 {$ENDIF}
@@ -11,12 +11,12 @@ type
 
   TBaseYaml = class
   protected
-    {$IF OXYGENE}
+    {$IFDEF OXYGENE}
     method AfterConstruction; virtual; empty;
     {$ENDIF}
   public
     function Generate(const aIndent: String): String; virtual; abstract;
-    {$IF OXYGENE}
+    {$IFDEF OXYGENE}
     constructor;
     {$ENDIF}
   end;
@@ -48,7 +48,7 @@ type
   TSemanticLocationSpan = class(TBaseYaml)
   public
     procedure AfterConstruction; override;
-    {$IF NOT OXYGENE}
+    {$IFNDEF OXYGENE}
     destructor Destroy; override;
     {$ENDIF}
   public
@@ -68,7 +68,7 @@ type
   TSemanticMasterYaml = class(TBaseSemanticYaml)
   public
     procedure  AfterConstruction; override;
-    {$IF NOT OXYGENE}
+    {$IFNDEF OXYGENE}
     destructor Destroy; override;
     {$ENDIF}
   public
@@ -87,7 +87,7 @@ type
   TSemanticItemYaml = class(TBaseSemanticYaml)
   public
     procedure  AfterConstruction; override;
-    {$IF NOT OXYGENE}
+    {$IFNDEF OXYGENE}
     destructor Destroy; override;
     {$ENDIF}
   public
@@ -106,7 +106,7 @@ type
   TSemanticParentYaml = class(TBaseSemanticYaml)
   public
     procedure  AfterConstruction; override;
-    {$IF NOT OXYGENE}
+    {$IFNDEF OXYGENE}
     destructor Destroy; override;
     {$ENDIF}
   public
@@ -118,7 +118,7 @@ type
   end;
 
 implementation
-{$IF NOT OXYGENE}
+{$IFNDEF OXYGENE}
 uses
   SysUtils;
 {$ENDIF}
@@ -130,7 +130,7 @@ begin
   start := TSemanticSpan.Create;
   end_  := TSemanticSpan.Create;
 end;
-{$IF NOT OXYGENE}
+{$IFNDEF OXYGENE}
 destructor TSemanticLocationSpan.Destroy;
 begin
   start.Free;
@@ -154,7 +154,7 @@ begin
   locationSpan := TSemanticLocationSpan.Create;
   span         := TSemanticSpan.Create;
 end;
-{$IF NOT OXYGENE}
+{$IFNDEF OXYGENE}
 destructor TSemanticItemYaml.Destroy;
 begin
   locationSpan.Free;
@@ -184,7 +184,7 @@ begin
   footerSpan  := TSemanticSpan.Create;
   children    := TBaseSemanticYamlList.Create;
 end;
-{$IF NOT OXYGENE}
+{$IFNDEF OXYGENE}
 destructor TSemanticParentYaml.Destroy;
 begin
   locationSpan.Free;
@@ -251,7 +251,7 @@ begin
   footerSpan   := TSemanticSpan.Create;
   children     := TBaseSemanticYamlList.Create;
 end;
-{$IF NOT OXYGENE}
+{$IFNDEF OXYGENE}
 destructor TSemanticMasterYaml.Destroy;
 begin
   locationSpan.Free;

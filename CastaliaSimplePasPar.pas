@@ -219,7 +219,7 @@ type
 
 
     FTopDefineRec: PDefineRec;
-    procedure EnterDefineBlock(ADefined: Boolean);
+    procedure EnterDefineBlock(ADefined: Boolean);{$IFDEF OXYGENE} unsafe;{$ENDIF}
     procedure ExitDefineBlock;
     procedure ClearDefines;
 
@@ -6058,7 +6058,10 @@ var
   StackFrame: PDefineRec;
 begin
   Exit;
-  {$IFNDEF OXYGENE}
+  {$IFDEF OXYGENE}
+  var dr := new TDefineRec;
+  StackFrame := @dr;
+  {$ELSE}
   New(StackFrame);
   {$ENDIF}
   StackFrame^.Next := FTopDefineRec;

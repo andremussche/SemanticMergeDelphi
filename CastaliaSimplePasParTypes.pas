@@ -18,12 +18,12 @@ unit CastaliaPasLexTypes;
 unit CastaliaSimplePasParTypes;
 
 interface
-{$IF NOT OXYGENE}
+{$IFNDEF OXYGENE}
 uses SysUtils, TypInfo;
 {$ENDIF}
 type
 
-  TmwParseError ={$IF OXYGENE} public enum{$ENDIF}(
+  TmwParseError ={$IFDEF OXYGENE} public enum{$ENDIF}(
     InvalidAdditiveOperator,
     InvalidAccessSpecifier,
     InvalidCharString,
@@ -96,7 +96,7 @@ type
     ciClassTypeEnd,			// DR 2001-07-31
     ciClassVisibility,
     ciCompoundStatement,
-	ciConstantColon,
+	  ciConstantColon,
     ciConstantDeclaration,
     ciConstantEqual,
     ciConstantExpression,
@@ -117,17 +117,17 @@ type
     ciDestructorName,
     ciDirective16Bit,
     ciDirectiveBinding,
-	ciDirectiveCalling,
-	ciDirectiveDeprecated,	// DR 2001-10-20
-	ciDirectiveLibrary,		// DR 2001-10-20
-	ciDirectiveLocal,		// DR 2001-11-14
-	ciDirectivePlatform,	// DR 2001-10-20
-	ciDirectiveVarargs,		// DR 2001-11-14	
-	ciDispIDSpecifier,		// DR 2001-07-26
+  	ciDirectiveCalling,
+  	ciDirectiveDeprecated,	// DR 2001-10-20
+  	ciDirectiveLibrary,		// DR 2001-10-20
+	  ciDirectiveLocal,		// DR 2001-11-14
+	  ciDirectivePlatform,	// DR 2001-10-20
+	  ciDirectiveVarargs,		// DR 2001-11-14	
+	  ciDispIDSpecifier,		// DR 2001-07-26
     ciDispInterfaceForward,
     ciEmptyStatement,
-	ciEnumeratedType,
-	ciEnumeratedTypeItem,	// DR 2001-10-29
+	  ciEnumeratedType,
+	  ciEnumeratedTypeItem,	// DR 2001-10-29
     ciExceptBlock,
     ciExceptionBlockElseBranch,
     ciExceptionClassTypeIdentifier,
@@ -151,23 +151,23 @@ type
     ciFormalParameterList,
     ciFormalParameterSection,
     ciForStatement,
-	ciForwardDeclaration, // DR 2001-07-23
+	  ciForwardDeclaration, // DR 2001-07-23
     ciFunctionHeading,
     ciFunctionMethodDeclaration,
     ciFunctionMethodName,
-	ciFunctionProcedureBlock,
-	ciFunctionProcedureName,
-	ciHandlePtCompDirect,   //XM 20001125
-	ciHandlePtDefineDirect, //XM 20001125
-	ciHandlePtElseDirect,   //XM 20001125
-	ciHandlePtIfDefDirect,  //XM 20001125
-	ciHandlePtEndIfDirect,  //XM 20001125
-	ciHandlePtIfNDefDirect, //XM 20001125
-	ciHandlePtIfOptDirect,  //XM 20001125
-	ciHandlePtIncludeDirect,//XM 20001125
-	ciHandlePtResourceDirect,//XM 20001125
-	ciHandlePtUndefDirect, //XM 20001125
-	ciIdentifier,
+	  ciFunctionProcedureBlock,
+	  ciFunctionProcedureName,
+	  ciHandlePtCompDirect,   //XM 20001125
+	  ciHandlePtDefineDirect, //XM 20001125
+	  ciHandlePtElseDirect,   //XM 20001125
+	  ciHandlePtIfDefDirect,  //XM 20001125
+	  ciHandlePtEndIfDirect,  //XM 20001125
+	  ciHandlePtIfNDefDirect, //XM 20001125
+	  ciHandlePtIfOptDirect,  //XM 20001125
+	  ciHandlePtIncludeDirect,//XM 20001125
+	  ciHandlePtResourceDirect,//XM 20001125
+	  ciHandlePtUndefDirect, //XM 20001125
+	  ciIdentifier,
     ciIdentifierList,
     ciIfStatement,
     ciImplementationSection,
@@ -185,8 +185,8 @@ type
     ciInterfaceType,
     ciLabelDeclarationSection,
     ciLabeledStatement,
-	ciLabelId,
-	ciLibraryFile,
+	  ciLabelId,
+	  ciLibraryFile,
     ciMainUsedUnitExpression,
     ciMainUsedUnitName,
     ciMainUsedUnitStatement,
@@ -215,8 +215,8 @@ type
     ciOrdinalIdentifier,
     ciOrdinalType,
     ciOutParameter,
-	ciPackageFile,
-	ciParameterFormal,
+	  ciPackageFile,
+	  ciParameterFormal,
     ciParameterName,
     ciParameterNameList,
     ciParseFile,
@@ -245,7 +245,7 @@ type
     ciRecordFieldConstant,
     ciRecordType,
     ciRecordVariant,
-	ciRelativeOperator,
+  	ciRelativeOperator,
     ciRepeatStatement,
     ciRequiresClause,
     ciRequiresIdentifier,
@@ -274,7 +274,7 @@ type
     ciStorageSpecifier,
     ciStorageStored,
     ciStringIdentifier,
-	ciStringStatement,
+	  ciStringStatement,
     ciStringType,
     ciStructuredType,
     ciSubrangeType,
@@ -303,7 +303,7 @@ type
     ciVariableTwo,
     ciVariantIdentifier,
     ciVariantSection,
-	ciVarParameter,
+	  ciVarParameter,
     ciVarSection,
     ciVisibilityAutomated,
     ciVisibilityPrivate,
@@ -322,7 +322,7 @@ implementation
 
 function ParserErrorName(Value: TmwParseError): String;
 begin
-  {$IF OXYGENE}
+  {$IFDEF OXYGENE}
   result := Value.ToString();
   {$ELSE}
   result := GetEnumName(TypeInfo(TmwParseError), Integer(Value));
