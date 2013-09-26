@@ -15,7 +15,11 @@ method SetString(var TargetString: String; BufferPointer: PChar; Length: Integer
 
 method UpperCase(aString: String): String;
 
+method LowerCase(aString: String): String;
+
 method CharInSet(C: Char; CharSet: array of Char): Boolean;
+
+method BoolToStr(aBoolean, UseBoolStrs: Boolean): String;
 
 const MaxInt: Integer = Integer.MaxValue;
 
@@ -94,6 +98,16 @@ begin
   var ptr: PString;
   ptr := PString(aString);
   result := &Copy(ptr^, aStart, aLength);
+end;
+
+method LowerCase(aString: String): String;
+begin
+  exit aString.ToLower();
+end;
+
+method BoolToStr(aBoolean, UseBoolStrs: Boolean): String;
+begin
+  exit aBoolean.ToString();
 end;
 
 method TStrings.Delete(aElement: String);

@@ -2096,7 +2096,9 @@ end;
 
 procedure TPas2YamlParser.Run(aUnitName: String; SourceStream: TCustomMemoryStream);
 begin
+  {$IFDEF NOT OXYGENE}
   FYamlMaster.Free; //remove old
+  {$ENDIF}
   FYamlMaster    := TSemanticMasterYaml.Create;
   FCurrentParent := nil;
 
@@ -2755,8 +2757,12 @@ end;
 procedure TPas2YamlParser.EnterHandler(const aName: String);
 begin
   if assigned(OnDebugOutput) then
+    {$IFDEF OXYGENE}
+    OnDebugOutput(String.Format('{0}{1} -> {2} at {3}:{4}', FIndent, aName, Lexer.Token, Lexer.LineNumber+1, Lexer.LinePos));
+    {$ELSE}
     OnDebugOutput(Format('%s%s -> %s at %d:%d',
                          [FIndent, aName, Lexer.Token, Lexer.LineNumber+1, Lexer.LinePos]));
+    {$ENDIF}    
   FIndent := FIndent + '+ ';
 end;
 
@@ -2764,8 +2770,12 @@ procedure TPas2YamlParser.ExitHandler(const aName: String);
 begin
   FIndent := Copy(FIndent, 1, length(FIndent)-2);
   if assigned(OnDebugOutput) then
+    {$IFDEF OXYGENE}
+    OnDebugOutput(String.Format('{0}{1} <- {2} at {3}:{4}', FIndent, aName, Lexer.Token, Lexer.LineNumber+1, Lexer.LinePos));
+    {$ELSE}
     OnDebugOutput(Format('%s%s <- %s at %d:%d',
                          [FIndent, aName, Lexer.Token, Lexer.LineNumber+1, Lexer.LinePos]));
+    {$ENDIF}  
 end;
 
 procedure TPas2YamlParser.CustomAttribute;

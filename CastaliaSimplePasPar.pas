@@ -300,7 +300,7 @@ type
     procedure ContainsExpression; virtual;
     procedure ContainsIdentifier; virtual;
     procedure ContainsStatement; virtual;
-    {$IFDEF D8_NEWER OR OXYGENE}
+    {$IFDEF D8_NEWER}
     procedure CustomAttribute; virtual; //JThurman 2004-03-03
     {$ENDIF}
     procedure DeclarationSection; virtual;
@@ -509,7 +509,7 @@ type
     procedure WhileStatement; virtual;
     procedure WithStatement; virtual;
     procedure WriteAccessIdentifier; virtual;
-    {$IFDEF D8_NEWER OR OXYGENE}//JThurman 2004-03-21
+    {$IFDEF D8_NEWER}//JThurman 2004-03-21
     {This is the syntax for custom attributes, based quite strictly on the
     ECMA syntax specifications for C#, but with a Delphi expression being
     used at the bottom as opposed to a C# expression}
@@ -532,6 +532,9 @@ type
     procedure NamedArgumentList;
     procedure NamedArgument;
     procedure AttributeArgumentExpression; 
+    {$ENDIF}
+    {$IFDEF OXYGENE}
+    method AfterConstruction; virtual; empty;
     {$ENDIF}
     property ExID: TptTokenKind read GetExID;
     property GenID: TptTokenKind read GetGenID;
@@ -735,6 +738,9 @@ begin
   InitDefines;
   FDefineStack := 0;
   FUseDefines := False;
+  {$IFDEF OXYGENE}
+  AfterConstruction(); 
+  {$ENDIF}
 end;
 
 {$IF NOT OXYGENE}
@@ -5079,7 +5085,7 @@ begin
       begin
         FunctionMethodDeclaration;
       end;
-    {$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-03-2003
+    {$IFDEF D8_NEWER} //JThurman 2004-03-2003
     TptTokenKind.ptIdentifier:
       begin
         if Lexer.ExID = TptTokenKind.ptOperator then
@@ -5099,9 +5105,9 @@ end;
 
 procedure TmwSimplePasPar.LabelDeclarationSection;
 begin
-  Expected(ptLabel);
+  Expected(TptTokenKind.ptLabel);
   LabelId;
-  while (TokenID = ptComma) do
+  while (TokenID = TptTokenKind.ptComma) do
   begin
     NextToken;
     LabelId;
@@ -5112,51 +5118,51 @@ end;
 procedure TmwSimplePasPar.ProceduralDirective; //TODO: Add STATIC and FINAL
 begin
   case ExID of
-    ptAbstract:
+    TptTokenKind.ptAbstract:
       begin
         NextToken;
       end;
-    ptCdecl, ptPascal, ptRegister, ptSafeCall, ptStdCall:
+    TptTokenKind.ptCdecl, TptTokenKind.ptPascal, TptTokenKind.ptRegister, TptTokenKind.ptSafeCall, TptTokenKind.ptStdcall:
       begin
         DirectiveCalling;
       end;
-    ptExport, ptFar, ptNear:
+    TptTokenKind.ptExport, TptTokenKind.ptFar, TptTokenKind.ptNear:
       begin
         Directive16Bit;
       end;
-    ptExternal:
+    TptTokenKind.ptExternal:
       begin
         ExternalDirective;
       end;
-    ptDynamic, ptMessage, ptOverload, ptOverride, ptReintroduce, ptVirtual:
+    TptTokenKind.ptDynamic, TptTokenKind.ptMessage, TptTokenKind.ptOverload, TptTokenKind.ptOverride, TptTokenKind.ptReintroduce, TptTokenKind.ptVirtual:
       begin
         DirectiveBinding;
       end;
-    ptAssembler:
+    TptTokenKind.ptAssembler:
       begin
         NextToken;
       end;
     {$IFDEF D8_NEWER}
-    ptStatic:
+    TptTokenKind.ptStatic:
       begin
         NextToken;
       end;
     {$ENDIF}
     {$IFDEF D9_NEWER}
-     ptInline:
+     TptTokenKind.ptInline:
        begin
          NextToken;
        end;
     {$ENDIF}
-    ptDeprecated:
+    TptTokenKind.ptDeprecated:
       DirectiveDeprecated; // DR 2001-10-20
-    ptLibrary:
+    TptTokenKind.ptLibrary:
       DirectiveLibrary; // DR 2001-10-20
-    ptPlatform:
+    TptTokenKind.ptPlatform:
       DirectivePlatform; // DR 2001-10-20
-    ptLocal:
+    TptTokenKind.ptLocal:
       DirectiveLocal; // DR 2001-11-14
-    ptVarargs:
+    TptTokenKind.ptVarargs:
       DirectiveVarargs; // DR 2001-11-14
   else
     begin
@@ -5168,11 +5174,11 @@ end;
 procedure TmwSimplePasPar.ExportedHeading;
 begin
   case TokenID of
-    ptFunction:
+    TptTokenKind.ptFunction:
       begin
         FunctionHeading;
       end;
-    ptProcedure:
+    TptTokenKind.ptProcedure:
       begin
         ProcedureHeading;
       end;
@@ -5181,55 +5187,55 @@ begin
       SynError(TmwParseError.InvalidExportedHeading);
     end;
   end;
-  if TokenID = ptSemiColon then SEMICOLON;
+  if TokenID = TptTokenKind.ptSemiColon then SEMICOLON;
   case ExID of
-    ptForward:
+    TptTokenKind.ptForward:
       begin
         ForwardDeclaration; //jdj added 02/07/2001
 //        NextToken;
 //        SEMICOLON;
       end;
-    ptAssembler:
+    TptTokenKind.ptAssembler:
       begin
         NextToken;
         SEMICOLON;
-        if ExID = ptForward then
+        if ExID = TptTokenKind.ptForward then
           ForwardDeclaration; //jdj added 02/07/2001
       end;
   else  //TODO: Add STATIC and FINAL
-    while ExID in [ptAbstract, ptCdecl, ptDynamic, ptExport, ptExternal, ptFar,
-      ptMessage, ptNear, ptOverload, ptOverride, ptPascal, ptRegister,
-      ptReintroduce, ptSafeCall, ptStdCall, ptVirtual,
-      ptDeprecated, ptLibrary, ptPlatform, // DR 2001-10-20
-      ptLocal, ptVarargs // DR 2001-11-14
-      {$IFDEF D8_NEWER OR OXYGENE}, ptStatic{$ENDIF}{$IFDEF D9_NEWER}, ptInline{$ENDIF}
+    while ExID in [TptTokenKind.ptAbstract, TptTokenKind.ptCdecl, TptTokenKind.ptDynamic, TptTokenKind.ptExport, TptTokenKind.ptExternal, TptTokenKind.ptFar,
+      TptTokenKind.ptMessage, TptTokenKind.ptNear, TptTokenKind.ptOverload, TptTokenKind.ptOverride, TptTokenKind.ptPascal, TptTokenKind.ptRegister,
+      TptTokenKind.ptReintroduce, TptTokenKind.ptSafeCall, TptTokenKind.ptStdcall, TptTokenKind.ptVirtual,
+      TptTokenKind.ptDeprecated, TptTokenKind.ptLibrary, TptTokenKind.ptPlatform, // DR 2001-10-20
+      TptTokenKind.ptLocal, TptTokenKind.ptVarargs // DR 2001-11-14
+      {$IFDEF D8_NEWER OR OXYGENE}, TptTokenKind.ptStatic{$ENDIF}{$IFDEF D9_NEWER}, TptTokenKind.ptInline{$ENDIF}
       ] do
     begin
       ProceduralDirective;
-      if TokenID = ptSemiColon then SEMICOLON;
+      if TokenID = TptTokenKind.ptSemiColon then SEMICOLON;
     end;
-    if ExID = ptForward then
+    if ExID = TptTokenKind.ptForward then
       ForwardDeclaration; //jdj added 02/07/2001
   end;
 end;
 
 procedure TmwSimplePasPar.FunctionHeading;
 begin
-  Expected(ptFunction);
+  Expected(TptTokenKind.ptFunction);
   FunctionProcedureName;
-  if TokenID = ptRoundOpen then
+  if TokenID = TptTokenKind.ptRoundOpen then
   begin
     FormalParameterList;
   end;
-  Expected(ptColon);
+  Expected(TptTokenKind.ptColon);
   ReturnType;
 end;
 
 procedure TmwSimplePasPar.ProcedureHeading;
 begin
-  Expected(ptProcedure);
+  Expected(TptTokenKind.ptProcedure);
   FunctionProcedureName;
-  if TokenID = ptRoundOpen then
+  if TokenID = TptTokenKind.ptRoundOpen then
   begin
     FormalParameterList;
   end;
@@ -5239,11 +5245,11 @@ end;
 procedure TmwSimplePasPar.VarSection;
 begin
   case TokenID of
-    ptThreadVar:
+    TptTokenKind.ptThreadvar:
       begin
         NextToken;
       end;
-    ptVar:
+    TptTokenKind.ptVar:
       begin
         NextToken;
       end;
@@ -5252,10 +5258,10 @@ begin
       SynError(TmwParseError.InvalidVarSection);
     end;
   end;
-  {$IFDEF D8_NEWER OR OXYGENE}//JThurman 2004-03-22
-  while TokenID in [ptIdentifier, ptSquareOpen] do
+  {$IFDEF D8_NEWER}//JThurman 2004-03-22
+  while TokenID in [TptTokenKind.ptIdentifier, TptTokenKind.ptSquareOpen] do
   begin
-    if TokenID = ptSquareOpen then
+    if TokenID = TptTokenKind.ptSquareOpen then
       CustomAttribute
     else
     begin
@@ -5274,17 +5280,17 @@ end;
 
 procedure TmwSimplePasPar.TypeSection;
 begin
-  Expected(ptType);
-  {$IFDEF D8_NEWER OR OXYGENE}
-  while ((TokenID = ptIdentifier) and (Lexer.ExID in ExTypes)) or
-        (Lexer.TokenID = ptSquareOpen) do
+  Expected(TptTokenKind.ptType);
+  {$IFDEF D8_NEWER}
+  while ((TokenID = TptTokenKind.ptIdentifier) and (Lexer.ExID in ExTypes)) or
+        (Lexer.TokenID = TptTokenKind.ptSquareOpen) do
   begin
-    if TokenID = ptSquareOpen then
+    if TokenID = TptTokenKind.ptSquareOpen then
       CustomAttribute
     else
     begin
       TypeDeclaration;
-      if TokenID = ptEqual then
+      if TokenID = TptTokenKind.ptEqual then
         TypedConstant;
       SEMICOLON;
     end;
@@ -5303,7 +5309,7 @@ end;
 procedure TmwSimplePasPar.TypeParamDecl;
 begin
   TypeParamList;
-  if TokenID = ptColon then
+  if TokenID = TptTokenKind.ptColon then
   begin
     NextToken;
     ConstraintList;
@@ -5313,7 +5319,7 @@ end;
 procedure TmwSimplePasPar.TypeParamDeclList;
 begin
   TypeParamDecl;
-  while TokenID = ptSemicolon do
+  while TokenID = TptTokenKind.ptSemiColon do
   begin
     NextToken;
     TypeParamDecl;
@@ -5322,16 +5328,16 @@ end;
 
 procedure TmwSimplePasPar.TypeParamList;
 begin
-  {$IFDEF D8_NEWER OR OXYGENE}
-  if TokenID = ptSquareOpen then
+  {$IFDEF D8_NEWER}
+  if TokenID = TptTokenKind.ptSquareOpen then
     AttributeSection;
   {$ENDIF}
   Identifier;
-  while TokenID = ptComma do
+  while TokenID = TptTokenKind.ptComma do
   begin
     NextToken;
-    {$IFDEF D8_NEWER OR OXYGENE}
-    if TokenID = ptSquareOpen then
+    {$IFDEF D8_NEWER}
+    if TokenID = TptTokenKind.ptSquareOpen then
       AttributeSection;
     {$ENDIF}
     Identifier;
@@ -5340,21 +5346,21 @@ end;
 
 procedure TmwSimplePasPar.TypeParams;
 begin
-  Expected(ptLower);
+  Expected(TptTokenKind.ptLower);
   TypeParamDeclList;
-  Expected(ptGreater);
+  Expected(TptTokenKind.ptGreater);
 end;
 
 procedure TmwSimplePasPar.ConstSection;
 begin
   case TokenID of
-    ptConst:
+    TptTokenKind.ptConst:
       begin
         NextToken;
-        {$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-03-22
-        while TokenID in [ptIdentifier, ptSquareOpen] do
+        {$IFDEF D8_NEWER} //JThurman 2004-03-22
+        while TokenID in [TptTokenKind.ptIdentifier, TptTokenKind.ptSquareOpen] do
         begin
-          if TokenID = ptSquareOpen then
+          if TokenID = TptTokenKind.ptSquareOpen then
             CustomAttribute
           else
           begin
@@ -5370,10 +5376,10 @@ begin
         end;
         {$ENDIF}
       end;
-    ptResourceString:
+    TptTokenKind.ptResourcestring:
       begin
         NextToken;
-        while (TokenID = ptIdentifier) do
+        while (TokenID = TptTokenKind.ptIdentifier) do
         begin
           ResourceDeclaration;
           SEMICOLON;
@@ -5389,40 +5395,40 @@ end;
 procedure TmwSimplePasPar.InterfaceDeclaration;
 begin
   case TokenID of
-    ptConst:
+    TptTokenKind.ptConst:
       begin
         ConstSection;
       end;
-    ptFunction:
+    TptTokenKind.ptFunction:
       begin
         ExportedHeading;
       end;
-    ptProcedure:
+    TptTokenKind.ptProcedure:
       begin
         ExportedHeading;
       end;
-    ptResourceString:
+    TptTokenKind.ptResourcestring:
       begin
         ConstSection;
       end;
-    ptType:
+    TptTokenKind.ptType:
       begin
         TypeSection;
       end;
-    ptThreadVar:
+    TptTokenKind.ptThreadvar:
       begin
         VarSection;
       end;
-    ptVar:
+    TptTokenKind.ptVar:
       begin
         VarSection;
       end;
-    ptExports:
+    TptTokenKind.ptExports:
       begin
         ExportsClause;
       end;
-    {$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-03-03
-    ptSquareOpen:
+    {$IFDEF D8_NEWER} //JThurman 2004-03-03
+    TptTokenKind.ptSquareOpen:
       begin
         CustomAttribute;
       end;
@@ -5436,21 +5442,21 @@ end;
 
 procedure TmwSimplePasPar.ExportsElement;
 begin
-  Expected(ptIdentifier);
+  Expected(TptTokenKind.ptIdentifier);
   //  if TokenID = ptIndex then
-  if fLexer.ExID = ptIndex then //jdj 20001207
+  if fLexer.ExID = TptTokenKind.ptIndex then //jdj 20001207
   begin
     NextToken;
-    Expected(ptIntegerConst);
+    Expected(TptTokenKind.ptIntegerConst);
   end;
   //  if TokenID = ptName then
-  if fLexer.ExID = ptName then //jdj 20001207
+  if fLexer.ExID = TptTokenKind.ptName then //jdj 20001207
   begin
     NextToken;
     CharString;
   end;
   //  if TokenID = ptResident then
-  if fLexer.ExID = ptResident then //jdj 20001207
+  if fLexer.ExID = TptTokenKind.ptResident then //jdj 20001207
   begin
     NextToken;
   end;
@@ -5458,16 +5464,16 @@ end;
 
 procedure TmwSimplePasPar.CompoundStatement;
 begin
-  Expected(ptBegin);
+  Expected(TptTokenKind.ptBegin);
   StatementList;
-  Expected(ptEnd);
+  Expected(TptTokenKind.ptEnd);
 end;
 
 procedure TmwSimplePasPar.ExportsClause;
 begin
-  Expected(ptExports);
+  Expected(TptTokenKind.ptExports);
   ExportsElement;
-  while TokenID = ptComma do
+  while TokenID = TptTokenKind.ptComma do
   begin
     NextToken;
     ExportsElement;
@@ -5477,9 +5483,9 @@ end;
 
 procedure TmwSimplePasPar.ContainsClause;
 begin
-  ExpectedEx(ptContains);
+  ExpectedEx(TptTokenKind.ptContains);
   ContainsStatement;
-  while TokenID = ptComma do
+  while TokenID = TptTokenKind.ptComma do
   begin
     NextToken;
     ContainsStatement;
@@ -5490,7 +5496,7 @@ end;
 procedure TmwSimplePasPar.ContainsStatement;
 begin
   ContainsIdentifier;
-  if fLexer.TokenID = ptIn then
+  if fLexer.TokenID = TptTokenKind.ptIn then
   begin
     NextToken;
     ContainsExpression;
@@ -5499,7 +5505,7 @@ end;
 
 procedure TmwSimplePasPar.ContainsIdentifier;
 begin
-  Expected(ptIdentifier);
+  Expected(TptTokenKind.ptIdentifier);
 end;
 
 procedure TmwSimplePasPar.ContainsExpression;
@@ -5509,9 +5515,9 @@ end;
 
 procedure TmwSimplePasPar.RequiresClause;
 begin
-  ExpectedEx(ptRequires);
+  ExpectedEx(TptTokenKind.ptRequires);
   RequiresIdentifier;
-  while TokenID = ptComma do
+  while TokenID = TptTokenKind.ptComma do
   begin
     NextToken;
     RequiresIdentifier;
@@ -5521,12 +5527,12 @@ end;
 
 procedure TmwSimplePasPar.RequiresIdentifier;
 begin
-  Expected(ptIdentifier);
-  {$IFDEF D8_NEWER OR OXYGENE}
-  while Lexer.TokenID = ptPoint do
+  Expected(TptTokenKind.ptIdentifier);
+  {$IFDEF D8_NEWER}
+  while Lexer.TokenID = TptTokenKind.ptPoint do
   begin
     NextToken;
-    Expected(ptIdentifier);
+    Expected(TptTokenKind.ptIdentifier);
   end;
   {$ENDIF}
 end;
@@ -5534,22 +5540,22 @@ end;
 procedure TmwSimplePasPar.InitializationSection;
 begin
   case TokenID of
-    ptInitialization:
+    TptTokenKind.ptInitialization:
       begin
         NextToken;
         StatementList;
-        if TokenID = ptFinalization then
+        if TokenID = TptTokenKind.ptFinalization then
         begin
           NextToken;
           StatementList;
         end;
-        Expected(ptEnd);
+        Expected(TptTokenKind.ptEnd);
       end;
-    ptBegin:
+    TptTokenKind.ptBegin:
       begin
         CompoundStatement;
       end;
-    ptEnd:
+    TptTokenKind.ptEnd:
       begin
         NextToken;
       end;
@@ -5562,16 +5568,16 @@ end;
 
 procedure TmwSimplePasPar.ImplementationSection;
 begin
-  Expected(ptImplementation);
-  if TokenID = ptUses then
+  Expected(TptTokenKind.ptImplementation);
+  if TokenID = TptTokenKind.ptUses then
   begin
     UsesClause;
   end;
-  while TokenID in [ptClass, ptConst, ptConstructor, ptDestructor, ptFunction,
-    ptLabel, ptProcedure, ptResourceString, ptThreadVar, ptType, ptVar,
-    ptExports
-    {$IFDEF D8_NEWER OR OXYGENE}//JThurman 2004-03-22
-    , ptSquareOpen
+  while TokenID in [TptTokenKind.ptClass, TptTokenKind.ptConst, TptTokenKind.ptConstructor, TptTokenKind.ptDestructor, TptTokenKind.ptFunction,
+    TptTokenKind.ptLabel, TptTokenKind.ptProcedure, TptTokenKind.ptResourcestring, TptTokenKind.ptThreadvar, TptTokenKind.ptType, TptTokenKind.ptVar,
+    TptTokenKind.ptExports
+    {$IFDEF D8_NEWER}//JThurman 2004-03-22
+    , TptTokenKind.ptSquareOpen
     {$ENDIF}
     ] do //ptResourceString added jdj
   begin
@@ -5581,15 +5587,15 @@ end;
 
 procedure TmwSimplePasPar.InterfaceSection;
 begin
-  Expected(ptInterface);
-  if TokenID = ptUses then
+  Expected(TptTokenKind.ptInterface);
+  if TokenID = TptTokenKind.ptUses then
   begin
     UsesClause;
   end;
-  while TokenID in [ptConst, ptFunction, ptResourceString, ptProcedure,
-    ptThreadVar, ptType, ptVar, ptExports
-    {$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-03-03
-    , ptSquareOpen
+  while TokenID in [TptTokenKind.ptConst, TptTokenKind.ptFunction, TptTokenKind.ptResourcestring, TptTokenKind.ptProcedure,
+    TptTokenKind.ptThreadvar, TptTokenKind.ptType, TptTokenKind.ptVar, TptTokenKind.ptExports
+    {$IFDEF D8_NEWER} //JThurman 2004-03-03
+    , TptTokenKind.ptSquareOpen
     {$ENDIF}
     ] do
   begin
@@ -5600,7 +5606,7 @@ end;
 procedure TmwSimplePasPar.IdentifierList;
 begin
   Identifier; // DR 2001-10-20
-  while TokenID = ptComma do
+  while TokenID = TptTokenKind.ptComma do
   begin
     NextToken;
     Identifier;
@@ -5610,7 +5616,7 @@ end;
 procedure TmwSimplePasPar.QualifiedIdentifierList;
 begin
   QualifiedIdentifier;
-  while (TokenID = ptComma) do
+  while (TokenID = TptTokenKind.ptComma) do
   begin
     NextToken;
     QualifiedIdentifier;
@@ -5620,25 +5626,25 @@ end;
 procedure TmwSimplePasPar.CharString;
 begin //updated mw 2/22/00, JThurman 6/24/2004
   case TokenID of
-    ptAsciiChar, ptIdentifier, ptRoundOpen, ptStringConst:
+    TptTokenKind.ptAsciiChar, TptTokenKind.ptIdentifier, TptTokenKind.ptRoundOpen, TptTokenKind.ptStringConst:
       while TokenID in
-        [ptAsciiChar, ptIdentifier, ptPlus, ptRoundOpen, ptStringConst,
-        ptString] do
+        [TptTokenKind.ptAsciiChar, TptTokenKind.ptIdentifier, TptTokenKind.ptPlus, TptTokenKind.ptRoundOpen, TptTokenKind.ptStringConst,
+        TptTokenKind.ptString] do
       begin
         case TokenID of
-          ptIdentifier, ptRoundOpen:
+          TptTokenKind.ptIdentifier, TptTokenKind.ptRoundOpen:
             begin
               VariableReference;
             end;
-          ptString: //JT
+          TptTokenKind.ptString: //JT
             begin
               StringStatement;
             end;
         else
           NextToken;
         end;
-        {$IFDEF D8_NEWER OR OXYGENE}
-        if Lexer.TokenID = ptPoint then
+        {$IFDEF D8_NEWER}
+        if Lexer.TokenID = TptTokenKind.ptPoint then
         begin
           NextToken;
           VariableReference;
@@ -5732,70 +5738,70 @@ end;*)
 
 procedure TmwSimplePasPar.IncludeFile;
 begin
-  while TokenID <> ptNull do
+  while TokenID <> TptTokenKind.ptNull do
     case TokenID of
-      ptClass:
+      TptTokenKind.ptClass:
         begin
           ProcedureDeclarationSection;
         end;
-      ptConst:
+      TptTokenKind.ptConst:
         begin
           ConstSection;
         end;
-      ptConstructor:
+      TptTokenKind.ptConstructor:
         begin
           ProcedureDeclarationSection;
         end;
-      ptDestructor:
+      TptTokenKind.ptDestructor:
         begin
           ProcedureDeclarationSection;
         end;
-      ptExports:
+      TptTokenKind.ptExports:
         begin
           ExportsClause;
         end;
-      ptFunction:
+      TptTokenKind.ptFunction:
         begin
           ProcedureDeclarationSection;
         end;
-      ptIdentifier:
+      TptTokenKind.ptIdentifier:
         begin
           Lexer.InitAhead;
-          if Lexer.AheadTokenID in [ptColon, ptEqual] then
+          if Lexer.AheadTokenID in [TptTokenKind.ptColon, TptTokenKind.ptEqual] then
           begin
             ConstantDeclaration;
-            if TokenID = ptSemiColon then SEMICOLON;
+            if TokenID = TptTokenKind.ptSemiColon then SEMICOLON;
           end
           else
             NextToken;
         end;
-      ptLabel:
+      TptTokenKind.ptLabel:
         begin
           LabelDeclarationSection;
         end;
-      ptProcedure:
+      TptTokenKind.ptProcedure:
         begin
           ProcedureDeclarationSection;
         end;
-      ptResourceString:
+      TptTokenKind.ptResourcestring:
         begin
           ConstSection;
         end;
-      ptType:
+      TptTokenKind.ptType:
         begin
           TypeSection;
         end;
-      ptThreadVar:
+      TptTokenKind.ptThreadvar:
         begin
           VarSection;
         end;
-      ptVar:
+      TptTokenKind.ptVar:
         begin
           VarSection;
         end;
-      ptInterface:
+      TptTokenKind.ptInterface:
          InterfaceSection;
-      ptImplementation:
+      TptTokenKind.ptImplementation:
          ImplementationSection;
     else
       begin
@@ -5806,44 +5812,44 @@ end;
 
 procedure TmwSimplePasPar.SkipSpace; //XM Jul-2000
 begin
-  Expected(ptSpace);
-  while TokenID in [ptSpace] do
+  Expected(TptTokenKind.ptSpace);
+  while TokenID in [TptTokenKind.ptSpace] do
     Lexer.Next;
 end;
 
 procedure TmwSimplePasPar.SkipCRLFco; //XM Jul-2000
 begin
-  Expected(ptCRLFCo);
-  while TokenID in [ptCRLFCo] do
+  Expected(TptTokenKind.ptCRLFCo);
+  while TokenID in [TptTokenKind.ptCRLFCo] do
     Lexer.Next;
 end;
 
 procedure TmwSimplePasPar.SkipCRLF; //XM Jul-2000
 begin
-  Expected(ptCRLF);
-  while TokenID in [ptCRLF] do
+  Expected(TptTokenKind.ptCRLF);
+  while TokenID in [TptTokenKind.ptCRLF] do
     Lexer.Next;
 end;
 
 procedure TmwSimplePasPar.ClassClass;
 begin
-  Expected(ptClass);
+  Expected(TptTokenKind.ptClass);
 end;
 
 procedure TmwSimplePasPar.PropertyDefault;
 begin
-  ExpectedEx(ptDefault);
+  ExpectedEx(TptTokenKind.ptDefault);
 end;
 
 procedure TmwSimplePasPar.DispIDSpecifier; // DR 2001-07-26
 begin
-  ExpectedEx(ptDispid);
+  ExpectedEx(TptTokenKind.ptDispid);
   ConstantExpression;
 end;
 
 procedure TmwSimplePasPar.IndexSpecifier;
 begin
-  ExpectedEx(ptIndex);
+  ExpectedEx(TptTokenKind.ptIndex);
   ConstantExpression;
 end;
 
@@ -5857,44 +5863,44 @@ end;
 
 procedure TmwSimplePasPar.DirectiveDeprecated;
 begin
-  ExpectedEx(ptDeprecated);
-  if TokenID = ptStringConst then
+  ExpectedEx(TptTokenKind.ptDeprecated);
+  if TokenID = TptTokenKind.ptStringConst then
     NextToken;
 end;
 
 procedure TmwSimplePasPar.DirectiveLibrary;
 begin
-  ExpectedEx(ptLibrary);
+  ExpectedEx(TptTokenKind.ptLibrary);
 end;
 
 procedure TmwSimplePasPar.DirectivePlatform;
 begin
-  ExpectedEx(ptPlatform);
+  ExpectedEx(TptTokenKind.ptPlatform);
 end;
 
 procedure TmwSimplePasPar.EnumeratedTypeItem;
 begin
   QualifiedIdentifier;
-  if TokenID = ptEqual then
+  if TokenID = TptTokenKind.ptEqual then
   begin
-    Expected(ptEqual);
+    Expected(TptTokenKind.ptEqual);
     ConstantExpression;
   end;
 end;
 
 procedure TmwSimplePasPar.Identifier;
 begin
-  Expected(ptIdentifier);
+  Expected(TptTokenKind.ptIdentifier);
 end;
 
 procedure TmwSimplePasPar.DirectiveLocal;
 begin
-  ExpectedEx(ptLocal);
+  ExpectedEx(TptTokenKind.ptLocal);
 end;
 
 procedure TmwSimplePasPar.DirectiveVarargs;
 begin
-  ExpectedEx(ptVarargs);
+  ExpectedEx(TptTokenKind.ptVarargs);
 end;
 
 procedure TmwSimplePasPar.AncestorId;
@@ -5908,7 +5914,7 @@ procedure TmwSimplePasPar.AncestorIdList;
 begin
   // !! Added this function back in
   AncestorId;
-  while(TokenID = ptComma) do
+  while(TokenID = TptTokenKind.ptComma) do
     begin
       NextToken;
       AncestorId;
@@ -5920,18 +5926,18 @@ end;
 procedure TmwSimplePasPar.AnonymousMethod;
 begin
   case TokenID of
-    ptFunction:
+    TptTokenKind.ptFunction:
       begin
         NextToken;
-        if TokenID = ptRoundOpen then
+        if TokenID = TptTokenKind.ptRoundOpen then
           FormalParameterList;
-        Expected(ptColon);
+        Expected(TptTokenKind.ptColon);
         ReturnType;
       end;
-    ptProcedure:
+    TptTokenKind.ptProcedure:
       begin
         NextToken;
-        if TokenID = ptRoundOpen then
+        if TokenID = TptTokenKind.ptRoundOpen then
           FormalParameterList;
       end;
   end;
@@ -5940,22 +5946,22 @@ end;
 
 procedure TmwSimplePasPar.AnonymousMethodType;
 begin
-{$IFDEF D11_NEWER OR OXYGENE}
-  ExpectedEx(ptReference); //ExID = ptReference
-  Expected(ptTo);
+{$IFDEF D11_NEWER}
+  ExpectedEx(TptTokenKind.ptReference); //ExID = ptReference
+  Expected(TptTokenKind.ptTo);
   case TokenID of
-    ptProcedure:
+    TptTokenKind.ptProcedure:
       begin
         NextToken;
-        if TokenID = ptRoundOpen then
+        if TokenID = TptTokenKind.ptRoundOpen then
           FormalParameterList;
       end;
-    ptFunction:
+    TptTokenKind.ptFunction:
       begin
         NextToken;
-        if TokenID = ptRoundOpen then
+        if TokenID = TptTokenKind.ptRoundOpen then
           FormalParameterList;
-        Expected(ptColon);
+        Expected(TptTokenKind.ptColon);
         ReturnType;
       end;
   end;
@@ -5991,7 +5997,11 @@ begin
   begin
     Frame := FTopDefineRec;
     FTopDefineRec := Frame^.Next;
+    {$IFDEF OXYGENE}
+    disposeAndNil(Frame);
+    {$ELSE}
     Dispose(Frame);
+    {$ENDIF}
   end;
 end;
 
@@ -6055,7 +6065,9 @@ var
   StackFrame: PDefineRec;
 begin
   Exit;
+  {$IFDEF NOT OXYGENE}
   New(StackFrame);
+  {$ENDIF}
   StackFrame^.Next := FTopDefineRec;
   StackFrame^.Defined := ADefined;
   StackFrame^.StartCount := FDefineStack;
@@ -6092,11 +6104,15 @@ begin
   begin
     FDefineStack := StackFrame^.StartCount;
     FTopDefineRec := StackFrame^.Next;
+    {$IFDEF OXYGENE}
+    disposeAndNil(StackFrame);
+    {$ELSE}
     Dispose(StackFrame);
+    {$ENDIF}
   end;
 end;
 
-{$IFDEF D8_NEWER OR OXYGENE} //JThurman 2004-03-03
+{$IFDEF D8_NEWER} //JThurman 2004-03-03
 
 procedure TmwSimplePasPar.GlobalAttributes;
 begin
@@ -6105,33 +6121,33 @@ end;
 
 procedure TmwSimplePasPar.GlobalAttributeSections;
 begin
-  while TokenID = ptSquareOpen do
+  while TokenID = TptTokenKind.ptSquareOpen do
     GlobalAttributeSection;
 end;
 
 procedure TmwSimplePasPar.GlobalAttributeSection;
 begin
-  Expected(ptSquareOpen);
+  Expected(TptTokenKind.ptSquareOpen);
   GlobalAttributeTargetSpecifier;
   AttributeList;
-  while TokenID = ptComma do
+  while TokenID = TptTokenKind.ptComma do
   begin
-    Expected(ptComma);
+    Expected(TptTokenKind.ptComma);
     GlobalAttributeTargetSpecifier;
     AttributeList;
   end;
-  Expected(ptSquareClose);
+  Expected(TptTokenKind.ptSquareClose);
 end;
 
 procedure TmwSimplePasPar.GlobalAttributeTargetSpecifier;
 begin
   GlobalAttributeTarget;
-  Expected(ptColon);
+  Expected(TptTokenKind.ptColon);
 end;
 
 procedure TmwSimplePasPar.GlobalAttributeTarget;
 begin
-  Expected(ptIdentifier);
+  Expected(TptTokenKind.ptIdentifier);
 end;
 
 procedure TmwSimplePasPar.Attributes;
@@ -6141,51 +6157,51 @@ end;
 
 procedure TmwSimplePasPar.AttributeSections;
 begin
-  while TokenID = ptSquareOpen do
+  while TokenID = TptTokenKind.ptSquareOpen do
     AttributeSection;
 end;
 
 procedure TmwSimplePasPar.AttributeSection;
 begin
-  Expected(ptSquareOpen);
+  Expected(TptTokenKind.ptSquareOpen);
   Lexer.InitAhead;
-  if Lexer.AheadTokenID = ptColon then
+  if Lexer.AheadTokenID = TptTokenKind.ptColon then
     AttributeTargetSpecifier;
   AttributeList;
-  while TokenID = ptComma do
+  while TokenID = TptTokenKind.ptComma do
   begin
     Lexer.InitAhead;
-    if Lexer.AheadTokenID = ptColon then
+    if Lexer.AheadTokenID = TptTokenKind.ptColon then
       AttributeTargetSpecifier;
     AttributeList;
   end;
-  Expected(ptSquareClose);
+  Expected(TptTokenKind.ptSquareClose);
 end;
 
 procedure TmwSimplePasPar.AttributeTargetSpecifier;
 begin
   AttributeTarget;
-  Expected(ptColon);
+  Expected(TptTokenKind.ptColon);
 end;
 
 procedure TmwSimplePasPar.AttributeTarget;
 begin
   case TokenID of
-    ptProperty:
-      Expected(ptProperty);
-    ptType:
-      Expected(ptType);
+    TptTokenKind.ptProperty:
+      Expected(TptTokenKind.ptProperty);
+    TptTokenKind.ptType:
+      Expected(TptTokenKind.ptType);
     else
-      Expected(ptIdentifier);
+      Expected(TptTokenKind.ptIdentifier);
   end;
 end;
 
 procedure TmwSimplePasPar.AttributeList;
 begin
   Attribute;
-  while TokenID = ptComma do
+  while TokenID = TptTokenKind.ptComma do
   begin
-    Expected(ptComma);
+    Expected(TptTokenKind.ptComma);
     AttributeList;
   end;
 end;
@@ -6193,42 +6209,42 @@ end;
 procedure TmwSimplePasPar.Attribute;
 begin
   AttributeName;
-  if TokenID = ptRoundOpen then
+  if TokenID = TptTokenKind.ptRoundOpen then
     AttributeArguments;
 end;
 
 procedure TmwSimplePasPar.AttributeName;
 begin
   case TokenID of
-    ptIn, ptOut, ptConst, ptVar:
+    TptTokenKind.ptIn, TptTokenKind.ptOut, TptTokenKind.ptConst, TptTokenKind.ptVar:
       NextToken;
   else
-    Expected(ptIdentifier);
+    Expected(TptTokenKind.ptIdentifier);
   end;
 end;
 
 procedure TmwSimplePasPar.AttributeArguments;
 begin
-  Expected(ptRoundOpen);
-  if TokenID <> ptRoundClose then
+  Expected(TptTokenKind.ptRoundOpen);
+  if TokenID <> TptTokenKind.ptRoundClose then
   begin
     Lexer.InitAhead;
-    if Lexer.AheadTokenID = ptEqual then
+    if Lexer.AheadTokenID = TptTokenKind.ptEqual then
       NamedArgumentList
     else
       PositionalArgumentList;
-    if Lexer.TokenID = ptEqual then
+    if Lexer.TokenID = TptTokenKind.ptEqual then
       NamedArgumentList;
   end;
-  Expected(ptRoundClose);
+  Expected(TptTokenKind.ptRoundClose);
 end;
 
 procedure TmwSimplePasPar.PositionalArgumentList;
 begin
   PositionalArgument;
-  while TokenID = ptComma do
+  while TokenID = TptTokenKind.ptComma do
   begin
-    Expected(ptComma);
+    Expected(TptTokenKind.ptComma);
     PositionalArgument;
   end;
 end;
@@ -6241,17 +6257,17 @@ end;
 procedure TmwSimplePasPar.NamedArgumentList;
 begin
   NamedArgument;
-  while TokenID = ptComma do
+  while TokenID = TptTokenKind.ptComma do
   begin
-    Expected(ptComma);
+    Expected(TptTokenKind.ptComma);
     NamedArgument;
   end;
 end;
 
 procedure TmwSimplePasPar.NamedArgument;
 begin
-  Expected(ptIdentifier);
-  Expected(ptEqual);
+  Expected(TptTokenKind.ptIdentifier);
+  Expected(TptTokenKind.ptEqual);
   AttributeArgumentExpression;
 end;
 

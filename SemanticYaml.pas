@@ -10,8 +10,15 @@ type
   TSemanticParentYaml = class;
 
   TBaseYaml = class
+  protected
+    {$IF OXYGENE}
+    method AfterConstruction; virtual; empty;
+    {$ENDIF}
   public
     function Generate(const aIndent: String): String; virtual; abstract;
+    {$IF OXYGENE}
+    constructor;
+    {$ENDIF}
   end;
 
   TBaseSemanticYaml = class(TBaseYaml)
@@ -40,7 +47,7 @@ type
   //locationSpan : {start: [1,0], end: [19,4]}
   TSemanticLocationSpan = class(TBaseYaml)
   public
-    procedure  AfterConstruction; override;
+    procedure AfterConstruction; override;
     {$IF NOT OXYGENE}
     destructor Destroy; override;
     {$ENDIF}
@@ -228,7 +235,11 @@ end;
 function TSemanticSpan.Generate(const aIndent: String): String;
 begin
   //[0, -1]
+  {$IFDEF OXYGENE}
+  Result := aIndent + String.Format('[{0}, {1}]', a, b);
+  {$ELSE}
   Result := aIndent + Format('[%d, %d]', [a, b]);
+  {$ENDIF}
 end;
 
 { TSemanticMasterYaml }
@@ -295,5 +306,12 @@ begin
               #13#10 +  //empty line between
               item.Generate(aIndent);
 end;
+
+{$IFDEF OXYGENE}
+constructor TBaseYaml;
+begin
+  self.AfterConstruction();
+end;
+{$ENDIF}
 
 end.

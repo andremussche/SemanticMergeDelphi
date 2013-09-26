@@ -22,7 +22,8 @@ interface
 uses SysUtils, TypInfo;
 {$ENDIF}
 type
-  TmwParseError = (
+
+  TmwParseError ={$IF OXYGENE} public enum{$ENDIF}(
     InvalidAdditiveOperator,
     InvalidAccessSpecifier,
     InvalidCharString,
@@ -321,7 +322,11 @@ implementation
 
 function ParserErrorName(Value: TmwParseError): String;
 begin
+  {$IF OXYGENE}
+  result := Value.ToString();
+  {$ELSE}
   result := GetEnumName(TypeInfo(TmwParseError), Integer(Value));
+  {$ENDIF}
 end;
 
 end.

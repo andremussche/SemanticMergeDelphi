@@ -290,7 +290,7 @@ end;
 {$IF NOT OXYGENE}
   const ExTypes = [ptDWORD, ptUnknown];
 {$ELSE}
-  const ExTypes: array of TptTokenKind = [TptTokenKind.ptDWORD, TptTokenKind.ptUnknown];
+  const ExTypes: set of TptTokenKind = [TptTokenKind.ptDWORD, TptTokenKind.ptUnknown];
 {$ENDIF}
 
 function TokenName(Value: TptTokenKind): String;

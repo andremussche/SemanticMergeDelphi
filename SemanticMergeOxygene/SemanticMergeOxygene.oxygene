@@ -24,7 +24,7 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <Optimize>False</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;D8_NEWER;D9_NEWER;D12_NEWER</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;D8_NEWER;D9_NEWER;D11_NEWER;D12_NEWER</DefineConstants>
     <GeneratePDB>True</GeneratePDB>
     <GenerateMDB>True</GenerateMDB>
     <CaptureConsoleOutput>False</CaptureConsoleOutput>
