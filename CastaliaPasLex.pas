@@ -158,6 +158,7 @@ type
     function Func73: TptTokenKind;
     function Func75: TptTokenKind;
     function Func76: TptTokenKind;
+    function Func77: TptTokenKind;
     function Func78: TptTokenKind;
     function Func79: TptTokenKind;
     function Func81: TptTokenKind;
@@ -327,7 +328,7 @@ type
     {$ENDIF}
     property CompilerDirective: String read GetCompilerDirective;
     property DirectiveParam: String read GetDirectiveParam;
-	property IsJunk: Boolean read GetIsJunk;
+  	property IsJunk: Boolean read GetIsJunk;
     property IsSpace: Boolean read GetIsSpace;
     property Line: String read GetLine write SetLine;
     //Note: setting the following two properties does not GO to that line, it just sets the internal counters
@@ -588,6 +589,7 @@ begin
       73: fIdentFuncTable[I] := @Func73;
       75: fIdentFuncTable[I] := @Func75;
       76: fIdentFuncTable[I] := @Func76;
+      77: fIdentFuncTable[I] := @Func77;
       78: fIdentFuncTable[I] := @Func78;
       79: fIdentFuncTable[I] := @Func79;
       81: fIdentFuncTable[I] := @Func81;
@@ -688,6 +690,7 @@ begin
       73: fIdentFuncTable[I] := Func73;
       75: fIdentFuncTable[I] := Func75;
       76: fIdentFuncTable[I] := Func76;
+      77: fIdentFuncTable[I] := Func77;
       78: fIdentFuncTable[I] := Func78;
       79: fIdentFuncTable[I] := Func79;
       81: fIdentFuncTable[I] := Func81;
@@ -1129,6 +1132,12 @@ function TmwBasePasLex.Func76: TptTokenKind;
 begin
   Result := TptTokenKind.ptIdentifier;
   if KeyComp('Until') then Result := TptTokenKind.ptUntil;
+end;
+
+function TmwBasePasLex.Func77: TptTokenKind;
+begin
+  Result := TptTokenKind.ptIdentifier;
+  if KeyComp('Namespace') then Result := TptTokenKind.ptUnit;
 end;
 
 function TmwBasePasLex.Func78: TptTokenKind;
