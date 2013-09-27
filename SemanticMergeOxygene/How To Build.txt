@@ -1,0 +1,9 @@
+Download and install Oxygene(the free command line version is fine)
+This can be found at the bottom of this page:
+http://www.remobjects.com/oxygene/
+
+Make sure that MSBUILD.exe is in the path.
+MSBUILD can be found here:
+C:\Windows\Microsoft.NET\Framework\v4.0.30319
+
+Then execute the Build.bat script
