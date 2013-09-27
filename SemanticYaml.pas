@@ -1,29 +1,36 @@
 unit SemanticYaml;
 
 interface
-
+{$IFNDEF OXYGENE}
 uses
   Generics.Collections;
-
+{$ENDIF}
 type
   TSemanticItemYaml = class;
   TSemanticParentYaml = class;
 
   TBaseYaml = class
+  protected
+    {$IFDEF OXYGENE}
+    method AfterConstruction; virtual; empty;
+    {$ENDIF}
   public
-    function Generate(const aIndent: string): string; virtual; abstract;
+    function Generate(const aIndent: String): String; virtual; abstract;
+    {$IFDEF OXYGENE}
+    constructor;
+    {$ENDIF}
   end;
 
   TBaseSemanticYaml = class(TBaseYaml)
   public
-    type_: string;
-    name: string;
-    function Generate(const aIndent: string): string; override;
+    type_: String;
+    name: String;
+    function Generate(const aIndent: String): String; override;
   end;
 
   TBaseSemanticYamlList = class(TList<TBaseSemanticYaml>)
   public
-    function Generate(const aIndent: string): string;
+    function Generate(const aIndent: String): String;
 
     function AddNewItem: TSemanticItemYaml;
     function AddNewParent: TSemanticParentYaml;
@@ -34,18 +41,20 @@ type
   public
     a: Integer;
     b: Integer;
-    function Generate(const aIndent: string): string; override;
+    function Generate(const aIndent: String): String; override;
   end;
 
   //locationSpan : {start: [1,0], end: [19,4]}
   TSemanticLocationSpan = class(TBaseYaml)
   public
-    procedure  AfterConstruction; override;
+    procedure AfterConstruction; override;
+    {$IFNDEF OXYGENE}
     destructor Destroy; override;
+    {$ENDIF}
   public
     start: TSemanticSpan;
     end_ : TSemanticSpan;
-    function Generate(const aIndent: string): string; override;
+    function Generate(const aIndent: String): String; override;
   end;
 
   (* ---
@@ -59,13 +68,15 @@ type
   TSemanticMasterYaml = class(TBaseSemanticYaml)
   public
     procedure  AfterConstruction; override;
+    {$IFNDEF OXYGENE}
     destructor Destroy; override;
+    {$ENDIF}
   public
     locationSpan: TSemanticLocationSpan;
     footerSpan: TSemanticSpan;
     parsingErrorsDetected: Boolean;
     children: TBaseSemanticYamlList;
-    function Generate(const aIndent: string): string; override;
+    function Generate(const aIndent: String): String; override;
   end;
 
   (*  - type : unit
@@ -76,11 +87,13 @@ type
   TSemanticItemYaml = class(TBaseSemanticYaml)
   public
     procedure  AfterConstruction; override;
+    {$IFNDEF OXYGENE}
     destructor Destroy; override;
+    {$ENDIF}
   public
     locationSpan: TSemanticLocationSpan;
     span: TSemanticSpan;
-    function Generate(const aIndent: string): string; override;
+    function Generate(const aIndent: String): String; override;
   end;
 
   (*   - type : interface
@@ -93,20 +106,22 @@ type
   TSemanticParentYaml = class(TBaseSemanticYaml)
   public
     procedure  AfterConstruction; override;
+    {$IFNDEF OXYGENE}
     destructor Destroy; override;
+    {$ENDIF}
   public
     locationSpan: TSemanticLocationSpan;
     headerSpan: TSemanticSpan;
     footerSpan: TSemanticSpan;
     children: TBaseSemanticYamlList;
-    function Generate(const aIndent: string): string; override;
+    function Generate(const aIndent: String): String; override;
   end;
 
 implementation
-
+{$IFNDEF OXYGENE}
 uses
   SysUtils;
-
+{$ENDIF}
 { TSemanticLocationSpan }
 
 procedure TSemanticLocationSpan.AfterConstruction;
@@ -115,15 +130,15 @@ begin
   start := TSemanticSpan.Create;
   end_  := TSemanticSpan.Create;
 end;
-
+{$IFNDEF OXYGENE}
 destructor TSemanticLocationSpan.Destroy;
 begin
   start.Free;
   end_.Free;
   inherited;
 end;
-
-function TSemanticLocationSpan.Generate(const aIndent: string): string;
+{$ENDIF}
+function TSemanticLocationSpan.Generate(const aIndent: String): String;
 begin
   //Result := inherited Generate(aIndent);
   //locationSpan : {start: [1,0], end: [19,4]}
@@ -139,15 +154,15 @@ begin
   locationSpan := TSemanticLocationSpan.Create;
   span         := TSemanticSpan.Create;
 end;
-
+{$IFNDEF OXYGENE}
 destructor TSemanticItemYaml.Destroy;
 begin
   locationSpan.Free;
   span.Free;
   inherited;
 end;
-
-function TSemanticItemYaml.Generate(const aIndent: string): string;
+{$ENDIF}
+function TSemanticItemYaml.Generate(const aIndent: String): String;
 begin
   (*  - type : unit
         name : Unit1
@@ -169,7 +184,7 @@ begin
   footerSpan  := TSemanticSpan.Create;
   children    := TBaseSemanticYamlList.Create;
 end;
-
+{$IFNDEF OXYGENE}
 destructor TSemanticParentYaml.Destroy;
 begin
   locationSpan.Free;
@@ -178,8 +193,8 @@ begin
   children.Free;
   inherited;
 end;
-
-function TSemanticParentYaml.Generate(const aIndent: string): string;
+{$ENDIF}
+function TSemanticParentYaml.Generate(const aIndent: String): String;
 begin
   (*   - type : interface
          name : interface
@@ -199,7 +214,7 @@ end;
 
 { TBaseSemanticYaml }
 
-function TBaseSemanticYaml.Generate(const aIndent: string): string;
+function TBaseSemanticYaml.Generate(const aIndent: String): String;
 begin
   if aIndent = '' then
   begin
@@ -208,7 +223,7 @@ begin
   end
   else
   begin
-    Result := Copy(aIndent, 1, Length(aIndent)-2) +
+    Result := Copy(aIndent, 1, length(aIndent)-2) +
               '- '    + 'type : '+ type_ + #13#10;   //    - type: xyz
     Result := Result +
               aIndent + 'name : '+ name  + #13#10;   //      name: xyz
@@ -217,10 +232,14 @@ end;
 
 { TSemanticSpan }
 
-function TSemanticSpan.Generate(const aIndent: string): string;
+function TSemanticSpan.Generate(const aIndent: String): String;
 begin
   //[0, -1]
+  {$IFDEF OXYGENE}
+  Result := aIndent + String.Format('[{0}, {1}]', a, b);
+  {$ELSE}
   Result := aIndent + Format('[%d, %d]', [a, b]);
+  {$ENDIF}
 end;
 
 { TSemanticMasterYaml }
@@ -232,7 +251,7 @@ begin
   footerSpan   := TSemanticSpan.Create;
   children     := TBaseSemanticYamlList.Create;
 end;
-
+{$IFNDEF OXYGENE}
 destructor TSemanticMasterYaml.Destroy;
 begin
   locationSpan.Free;
@@ -240,8 +259,8 @@ begin
   children.Free;
   inherited;
 end;
-
-function TSemanticMasterYaml.Generate(const aIndent: string): string;
+{$ENDIF}
+function TSemanticMasterYaml.Generate(const aIndent: String): String;
 begin
   (* ---
      type : file
@@ -275,8 +294,10 @@ begin
   Self.Add(Result);
 end;
 
-function TBaseSemanticYamlList.Generate(const aIndent: string): string;
+function TBaseSemanticYamlList.Generate(const aIndent: String): String;
+{$IFDEF NOT OXYGENE}
 var item: TBaseSemanticYaml;
+{$ENDIF}
 begin
   if Self.Count = 0 then Exit('');
 
@@ -285,5 +306,12 @@ begin
               #13#10 +  //empty line between
               item.Generate(aIndent);
 end;
+
+{$IFDEF OXYGENE}
+constructor TBaseYaml;
+begin
+  self.AfterConstruction();
+end;
+{$ENDIF}
 
 end.

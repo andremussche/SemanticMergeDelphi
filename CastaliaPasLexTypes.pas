@@ -19,18 +19,19 @@ unit CastaliaPasLexTypes;
 
 interface
 
+{$IFNDEF OXYGENE}
 uses SysUtils, TypInfo;
 
 {$INCLUDE CastaliaParserDefines.inc}
-
+{$ENDIF}
 var
-  CompTable: array[#0..#255] of byte;
+  CompTable: array[#0..#255] of Byte;
 
 type
 
   TMessageEventType = ( meError, meNotSupported );
 
-  TMessageEvent = procedure(Sender: TObject; const Typ : TMessageEventType; const Msg: string; X, Y: Integer ) of object; //jdj 7/16/1999; DR 2001-11-06
+  TMessageEvent = procedure(Sender: TObject; const Typ : TMessageEventType; const Msg: String; X, Y: Integer ) of object; //jdj 7/16/1999; DR 2001-11-06
 
   TCommentState = (csAnsi, csBor, csNo);
 
@@ -39,7 +40,11 @@ type
     Y : Integer;
   end;
 
+  {$IFDEF OXYGENE}
+  TptTokenKind = public enum(
+  {$ELSE}
   TptTokenKind = (
+  {$ENDIF}
     ptAbort, //JThurman 2004-11-8 (flow control routines)
     ptAbsolute,
     ptAbstract,
@@ -66,7 +71,7 @@ type
     ptByte,
     ptByteBool,
     ptCardinal,
-	ptCase,
+	  ptCase,
     ptCdecl,
     ptChar,
     ptClass,
@@ -79,14 +84,14 @@ type
     ptCompDirect,
     ptConst,
     ptConstructor,
-	ptContains,
+	  ptContains,
     ptContinue, //JThurman 2004-11-8 (flow control routines)
-	ptCRLF,
-	ptCRLFCo,
-	ptCurrency,
-	ptDefault,
-	ptDefineDirect,
-	ptDeprecated, // DR 2001-10-20
+	  ptCRLF,
+	  ptCRLFCo,
+  	ptCurrency,
+	  ptDefault,
+	  ptDefineDirect,
+	  ptDeprecated, // DR 2001-10-20
     ptDestructor,
     ptDispid,
     ptDispinterface,
@@ -111,9 +116,9 @@ type
     ptExtended,
     ptExternal,
     ptFar,
-	ptFile,
+  	ptFile,
   {$IFDEF D8_NEWER} //JThurman 2004-03-20
-  ptFinal,
+    ptFinal,
   {$ENDIF}
     ptFinalization,
     ptFinally,
@@ -124,9 +129,9 @@ type
     ptGoto,
     ptGreater,
     ptGreaterEqual,
-  ptHalt, //JThurman 2004-11-8 (flow control routines)
+    ptHalt, //JThurman 2004-11-8 (flow control routines)
   {$IFDEF D8_NEWER} //JThurman 2004-04-06
-  ptHelper,
+    ptHelper,
   {$ENDIF}
     ptIdentifier,
     ptIf,
@@ -150,14 +155,15 @@ type
     ptInterface,
     ptIs,
     ptLabel,
-	ptLibrary,
-	ptLocal,  // DR 2001-11-14
+	  ptLibrary,
+	  ptLocal,  // DR 2001-11-14
     ptLongBool,
     ptLongint,
     ptLongword,
     ptLower,
     ptLowerEqual,
     ptMessage,
+    ptMethod,
     ptMinus,
     ptMod,
     ptName,
@@ -172,9 +178,9 @@ type
     ptOf,
     ptOleVariant,
     ptOn,
-  {$IFDEF D8_NEWER} //JThurman 2004-03-20
-  ptOperator,
-  {$ENDIF}
+    {$IFDEF D8_NEWER} //JThurman 2004-03-20
+    ptOperator,
+    {$ENDIF}
     ptOr,
     ptOut,
     ptOverload,
@@ -182,8 +188,8 @@ type
     ptPackage,
     ptPacked,
     ptPascal,
-	ptPChar,
-	ptPlatform, // DR 2001-10-20
+  	ptPChar,
+  	ptPlatform, // DR 2001-10-20
     ptPlus,
     ptPoint,
     ptPointerSymbol,
@@ -200,9 +206,9 @@ type
     ptReal,
     ptReal48,
     ptRecord,
-  {$IFDEF D12_NEWER}
+    {$IFDEF D12_NEWER}
     ptReference, //JThurman 2008-25-07 (anonymous methods)
-  {$ENDIF}
+    {$ENDIF}
     ptRegister,
     ptReintroduce,
     ptRemove,
@@ -215,12 +221,12 @@ type
     ptRoundOpen,
     ptRunError, //JThurman 2004-11-8 (flow control routines)
     ptSafeCall,
-  {$IFDEF D8_NEWER} //JThurman 2004-03-19
-  ptSealed,
-  {$ENDIF}
+    {$IFDEF D8_NEWER} //JThurman 2004-03-19
+    ptSealed,
+    {$ENDIF}
     ptSemiColon,
     ptSet,
-	ptShl,
+	  ptShl,
     ptShortint,
     ptShortString,
     ptShr,
@@ -232,16 +238,16 @@ type
     ptSquareClose,
     ptSquareOpen,
     ptStar,
-  {$IFDEF D8_NEWER} //JThurman 2004-03-20
-  ptStatic,
-  {$ENDIF}
+    {$IFDEF D8_NEWER} //JThurman 2004-03-20
+    ptStatic,
+    {$ENDIF}
     ptStdcall,
     ptStored,
-  {$IFDEF D8_NEWER}
-  ptStrict, //JThurman 2004-03-03
-  {$ENDIF}
+    {$IFDEF D8_NEWER}
+    ptStrict, //JThurman 2004-03-03
+    {$ENDIF}
     ptString,
-	ptStringConst,
+	  ptStringConst,
     ptStringDQConst,	// 2002-01-14	
     ptStringresource,
     ptSymbol,
@@ -253,13 +259,13 @@ type
     ptUndefDirect,
     ptUnit,
     ptUnknown,
-  {$IFDEF D8_NEWER} //JThurman 2004-03-2003
-  ptUnsafe,
-  {$ENDIF}
+    {$IFDEF D8_NEWER} //JThurman 2004-03-2003
+    ptUnsafe,
+    {$ENDIF}
     ptUntil,
     ptUses,
-	ptVar,
-	ptVarargs, // DR 2001-11-14
+	  ptVar,
+	  ptVarargs, // DR 2001-11-14
     ptVariant,
     ptVirtual,
     ptWhile,
@@ -282,37 +288,44 @@ TmwPasLexStatus = record
   TokenPos: Integer;
   TokenID: TptTokenKind;
 end;
+{$IFNDEF OXYGENE}
+  const ExTypes = [ptDWORD, ptUnknown];
+{$ELSE}
+  const ExTypes: set of TptTokenKind = [TptTokenKind.ptDWORD, TptTokenKind.ptUnknown];
+{$ENDIF}
 
-const ExTypes = [ptDWORD, ptUnknown];
-
-function TokenName(Value: TptTokenKind): string;
-function ptTokenName(Value: TptTokenKind): string;
+function TokenName(Value: TptTokenKind): String;
+function ptTokenName(Value: TptTokenKind): String;
 function IsTokenIDJunk(const aTokenID : TptTokenKind ) :Boolean; //XM 20001210
 
 implementation
 
-function TokenName(Value: TptTokenKind): string;
+function TokenName(Value: TptTokenKind): String;
 begin //jdj 7/18/1999
   Result := Copy(ptTokenName(Value), 3, MaxInt);
 end;
 
-function ptTokenName(Value: TptTokenKind): string;
+function ptTokenName(Value: TptTokenKind): String;
 begin
+  {$IFNDEF OXYGENE}
   result := GetEnumName(TypeInfo(TptTokenKind), Integer(Value));
+  {$ELSE}
+  result := Value.ToString();
+  {$ENDIF}
 end;
 
-function IsTokenIDJunk(const aTokenID : TptTokenKind ) :boolean; //XM 20001210
+function IsTokenIDJunk(const aTokenID : TptTokenKind ) :Boolean; //XM 20001210
 begin
-  Result := aTokenID in [ptAnsiComment, ptBorComment, ptCRLF, ptCRLFCo, ptSlashesComment, ptSpace,
-    ptIfDirect,
-    ptIfEndDirect,
-    ptElseIfDirect,
-    ptIfDefDirect,
-    ptIfNDefDirect,
-    ptEndIfDirect,
-    ptIfOptDirect,
-    ptDefineDirect,
-    ptUndefDirect];
+  Result := aTokenID in [TptTokenKind.ptAnsiComment, TptTokenKind.ptBorComment, TptTokenKind.ptCRLF, TptTokenKind.ptCRLFCo, TptTokenKind.ptSlashesComment, TptTokenKind.ptSpace,
+    TptTokenKind.ptIfDirect,
+    TptTokenKind.ptIfEndDirect,
+    TptTokenKind.ptElseIfDirect,
+    TptTokenKind.ptIfDefDirect,
+    TptTokenKind.ptIfNDefDirect,
+    TptTokenKind.ptEndIfDirect,
+    TptTokenKind.ptIfOptDirect,
+    TptTokenKind.ptDefineDirect,
+    TptTokenKind.ptUndefDirect];
 end;
 
 
