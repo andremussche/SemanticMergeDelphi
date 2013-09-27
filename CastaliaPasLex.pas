@@ -293,6 +293,7 @@ type
     procedure SetOnIfDirect(const Value: TDirectiveEvent); virtual;
     procedure SetOnIfEndDirect(const Value: TDirectiveEvent); virtual;
     procedure CloneDefinesFrom(ALexer: TmwBasePasLex); {$IFDEF OXYGENE}unsafe;{$ENDIF}
+  protected
     fLineNumber: Integer;
     fLinePos: Integer;
     fCommentState: TCommentState;
@@ -1553,7 +1554,7 @@ finalizer TmwBasePasLex;
 begin
   inherited;
 end;  
-{$ELSEIF}
+{$ELSE}
 destructor TmwBasePasLex.Destroy;
 begin
   ClearDefines; //If we don't do this, we get a memory leak
@@ -2765,7 +2766,7 @@ finalizer TmwPasLex;
 begin
   inherited;
 end;
-{$ELSEIF}
+{$ELSE}
 destructor TmwPasLex.Destroy;
 begin
   fAheadLex.Free;

@@ -565,10 +565,11 @@ type
 
 implementation
 
-uses 
-  System.Runtime.InteropServices, 
+{$IFDEF OXYGENE}
+uses
+  System.Runtime.InteropServices,
   Microsoft.SqlServer.Server;
-{$IFNDEF OXYGENE}
+{$ELSE}
 uses Windows;
 {$ENDIF}
 { ESyntaxError }

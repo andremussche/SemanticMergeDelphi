@@ -1,5 +1,9 @@
 unit PasToYamlParser;
 
+{$IFNDEF OXYGENE}
+{$INCLUDE CastaliaParserDefines.inc}
+{$ENDIF}
+
 interface
 
 uses
@@ -35,7 +39,7 @@ type
     FPrevClassVisibility: TSemanticParentYaml;
     function  GetYaml: TSemanticMasterYaml;
     procedure UpdatePrevYamlLocation(aNode: TBaseSemanticYaml);
-    procedure UpdateNextYamlLocation(aNode: TBaseSemanticYaml);
+    //procedure UpdateNextYamlLocation(aNode: TBaseSemanticYaml);
 
     var FCurrentMethod: TSemanticItemYaml;
     function  ProcessItem_Before(const aType: String; aExactPos: Boolean; aDebugHandler: String): TSemanticItemYaml;
@@ -2464,6 +2468,7 @@ begin
   ExitHandler('UnitName');
 end;
 
+(*
 procedure TPas2YamlParser.UpdateNextYamlLocation(aNode: TBaseSemanticYaml);
 var
   item: TSemanticItemYaml;
@@ -2514,6 +2519,7 @@ begin
   else if aNode is TSemanticItemYaml then
     FPrevItem := aNode as TSemanticItemYaml
 end;
+*)
 
 procedure TPas2YamlParser.UpdatePrevYamlLocation(aNode: TBaseSemanticYaml);
 begin

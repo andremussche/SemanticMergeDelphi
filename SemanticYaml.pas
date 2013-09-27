@@ -295,7 +295,7 @@ begin
 end;
 
 function TBaseSemanticYamlList.Generate(const aIndent: String): String;
-{$IFDEF NOT OXYGENE}
+{$IFNDEF OXYGENE}
 var item: TBaseSemanticYaml;
 {$ENDIF}
 begin
