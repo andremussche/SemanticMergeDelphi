@@ -582,7 +582,7 @@ begin
 
   inherited;
 
-  //ExitHandler('UsesClause');
+  parentyaml.name := Lexer.PreviousIdentifierText;
   if FPrevClassVisibility <> nil then
     ProcessParent_Next(FPrevClassVisibility, False, 'end of Visibility');
   FPrevClassVisibility := nil;

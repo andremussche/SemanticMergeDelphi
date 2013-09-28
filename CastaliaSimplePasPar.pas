@@ -4651,6 +4651,16 @@ begin
   begin
     ExplicitType;
   end;
+  if (TokenID = TptTokenKind.ptIdentifier) and (ExID in [TptTokenKind.ptPublic, TptTokenKind.ptAssembly]) then
+  begin
+    //visibility identifier for type
+    NextToken();
+  end;
+  if (TokenID = TptTokenKind.ptIdentifier) and (ExID = TptTokenKind.ptPartial) then
+  begin
+    //partial class
+    NextToken();
+  end;
   Lexer.InitAhead;
   case TokenID of
     TptTokenKind.ptClass:
@@ -4729,6 +4739,7 @@ end;
 
 procedure TmwSimplePasPar.TypeName;
 begin
+  Lexer.PreviousIdentifierText := Lexer.Token;
   Expected(TptTokenKind.ptIdentifier);
   if TokenID = TptTokenKind.ptLower then
     TypeParams;
@@ -5271,8 +5282,7 @@ end;
 
 procedure TmwSimplePasPar.TypeSection;
 begin
-  Expected(TptTokenKind.ptType);
-  {$IFDEF D8_NEWER}
+  Expected(TptTokenKind.ptType);  
   while ((TokenID = TptTokenKind.ptIdentifier) and (Lexer.ExID in ExTypes)) or
         (Lexer.TokenID = TptTokenKind.ptSquareOpen) do
   begin
@@ -5286,15 +5296,6 @@ begin
       SEMICOLON;
     end;
   end;
-  {$ELSE}
-  while TokenID = ptIdentifier do
-  begin
-    TypeDeclaration;
-    if TokenId = ptEqual then //jdj 8/2/00
-      TypedConstant;
-    SEMICOLON;
-  end;
- {$ENDIF}
 end;
 
 procedure TmwSimplePasPar.TypeParamDecl;
@@ -5584,11 +5585,7 @@ begin
     UsesClause;
   end;
   while TokenID in [TptTokenKind.ptConst, TptTokenKind.ptFunction, TptTokenKind.ptResourcestring, TptTokenKind.ptProcedure,
-    TptTokenKind.ptThreadvar, TptTokenKind.ptType, TptTokenKind.ptVar, TptTokenKind.ptExports
-    {$IFDEF D8_NEWER} //JThurman 2004-03-03
-    , TptTokenKind.ptSquareOpen
-    {$ENDIF}
-    ] do
+    TptTokenKind.ptThreadvar, TptTokenKind.ptType, TptTokenKind.ptVar, TptTokenKind.ptExports, TptTokenKind.ptSquareOpen] do
   begin
     InterfaceDeclaration;
   end;
