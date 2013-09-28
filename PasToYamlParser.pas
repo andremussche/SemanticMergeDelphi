@@ -1804,7 +1804,6 @@ end;
 procedure TPas2YamlParser.ProcessItem_Next(const aItemYaml: TSemanticItemYaml; aExactPos: Boolean; aDebugHandler: String);
 begin
   ExitHandler(aDebugHandler); //'ProcedureMethodName');
-
   aItemYaml.locationSpan.end_.a    := Lexer.LineNumber+1;
   //same line? then till end of line
   if aItemYaml.locationSpan.start.a = aItemYaml.locationSpan.end_.a then
