@@ -1137,8 +1137,9 @@ end;
 
 function TmwBasePasLex.Func77: TptTokenKind;
 begin
-  Result := TptTokenKind.ptIdentifier;
-  if KeyComp('Namespace') then Result := TptTokenKind.ptUnit;
+  result := TptTokenKind.ptIdentifier;
+  if KeyComp('Namespace') then result := TptTokenKind.ptUnit else
+    if KeyComp('Partial') then fExID := TptTokenKind.ptPartial;
 end;
 
 function TmwBasePasLex.Func78: TptTokenKind;

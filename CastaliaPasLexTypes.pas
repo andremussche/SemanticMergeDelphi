@@ -188,6 +188,7 @@ type
     ptOverride,
     ptPackage,
     ptPacked,
+    ptPartial,
     ptPascal,
   	ptPChar,
   	ptPlatform, // DR 2001-10-20
