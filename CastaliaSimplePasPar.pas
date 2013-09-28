@@ -567,8 +567,7 @@ implementation
 
 {$IFDEF OXYGENE}
 uses
-  System.Runtime.InteropServices,
-  Microsoft.SqlServer.Server;
+  System;
 {$ELSE}
 uses Windows;
 {$ENDIF}

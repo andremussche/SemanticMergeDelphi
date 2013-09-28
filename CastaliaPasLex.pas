@@ -277,7 +277,7 @@ type
     function IsIdentifiers(AChar: Char): Boolean;
     function HashValue(AChar: Char): Integer;
     function GetLine: String;
-  {$IFDEF OXYGENE}assembly or {$ENDIF}protected
+    {$IFDEF OXYGENE}assembly or {$ENDIF}protected
     procedure SetLine(const Value: String); virtual;
     procedure SetOrigin(NewValue: PChar); virtual;
     procedure SetOnCompDirect(const Value: TDirectiveEvent); virtual;
@@ -293,7 +293,7 @@ type
     procedure SetOnIfDirect(const Value: TDirectiveEvent); virtual;
     procedure SetOnIfEndDirect(const Value: TDirectiveEvent); virtual;
     procedure CloneDefinesFrom(ALexer: TmwBasePasLex); {$IFDEF OXYGENE}unsafe;{$ENDIF}
-  protected
+    {$IFDEF OXYGENE}assembly or {$ENDIF}protected
     fLineNumber: Integer;
     fLinePos: Integer;
     fCommentState: TCommentState;
@@ -429,7 +429,7 @@ uses Windows;
 {$IFDEF OXYGENE}
 class constructor TmwBasePasLex;
 begin
-  MakeIdentTable;
+  MakeIdentTable();
 end;
 {$ENDIF}
 
