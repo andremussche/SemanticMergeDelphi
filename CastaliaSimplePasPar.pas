@@ -269,6 +269,7 @@ type
     procedure ClassField; virtual;
     procedure ClassForward; virtual;
     procedure ClassFunctionHeading; virtual;
+    procedure ClassMethodMethodHeading; virtual;
     procedure ClassHeritage; virtual;
     procedure ClassMemberList; virtual;
     procedure ClassMethodDirective; virtual;
@@ -1699,16 +1700,11 @@ begin
     TptTokenKind.ptDestructor:
       begin
         DestructorHeading;
-      end;
-    {$IFDEF D8_NEWER} //JThurman 2004-03-2003
+      end;   
     TptTokenKind.ptFunction, TptTokenKind.ptIdentifier:
       begin
         if (TokenID = TptTokenKind.ptIdentifier) and (Lexer.ExID <> TptTokenKind.ptOperator) then
           Expected(TptTokenKind.ptOperator);
-    {$ELSE}
-    ptFunction:
-      begin
-    {$ENDIF}
         Lexer.InitAhead;
         Lexer.AheadNext;
         case Lexer.AheadTokenID of
@@ -1719,6 +1715,21 @@ begin
         else
           begin
             ClassFunctionHeading;
+          end;
+        end;
+      end;
+    TptTokenKind.ptMethod:
+      begin
+        Lexer.InitAhead;
+        Lexer.AheadNext;
+        case Lexer.AheadTokenID of
+          TptTokenKind.ptPoint:
+            begin
+              ClassMethodResolution;
+            end;
+        else
+          begin
+            ClassMethodMethodHeading;
           end;
         end;
       end;
@@ -1756,6 +1767,32 @@ begin
   end;
   Expected(TptTokenKind.ptColon);
   ReturnType;
+  if TokenID = TptTokenKind.ptSemiColon then // DR 2002-01-14
+    SEMICOLON;
+  if ExID = TptTokenKind.ptDispid then
+  begin
+    DispIDSpecifier; // DR 2001-07-26
+    if TokenID = TptTokenKind.ptSemiColon then // DR 2002-01-14
+      SEMICOLON;
+  end;
+  if ExID in ClassMethodDirectiveEnum     //XM 2002-01-29
+   then ClassMethodDirective; //XM 2002-01-26
+end;
+
+procedure TmwSimplePasPar.ClassMethodMethodHeading;
+begin
+  if (TokenID = TptTokenKind.ptIdentifier) and (Lexer.ExID = TptTokenKind.ptOperator) then
+    Expected(TptTokenKind.ptIdentifier) else
+  Expected(TptTokenKind.ptMethod);
+  FunctionMethodName;
+  if TokenID = TptTokenKind.ptRoundOpen then
+  begin
+    FormalParameterList;
+  end;
+  if TokenID = TptTokenKind.ptColon then
+  begin
+    ReturnType;
+  end;
   if TokenID = TptTokenKind.ptSemiColon then // DR 2002-01-14
     SEMICOLON;
   if ExID = TptTokenKind.ptDispid then
@@ -4168,31 +4205,27 @@ procedure TmwSimplePasPar.ClassMemberList;
 begin
   ClassVisibility;
   while TokenID in [TptTokenKind.ptClass, TptTokenKind.ptConstructor, TptTokenKind.ptDestructor, TptTokenKind.ptFunction,
-    TptTokenKind.ptIdentifier, TptTokenKind.ptProcedure, TptTokenKind.ptProperty
-    {$IFDEF D8_NEWER}, TptTokenKind.ptType, TptTokenKind.ptSquareOpen, TptTokenKind.ptVar, TptTokenKind.ptConst, TptTokenKind.ptStrict,
-     TptTokenKind.ptCase{$ENDIF}] do
+    TptTokenKind.ptIdentifier, TptTokenKind.ptProcedure, TptTokenKind.ptProperty, TptTokenKind.ptType, TptTokenKind.ptSquareOpen,
+    TptTokenKind.ptVar, TptTokenKind.ptConst, TptTokenKind.ptStrict, TptTokenKind.ptCase, TptTokenKind.ptMethod] do
   begin
     while (TokenID = TptTokenKind.ptIdentifier) and
-      not (ExID in [TptTokenKind.ptPrivate, TptTokenKind.ptProtected, TptTokenKind.ptPublished, TptTokenKind.ptPublic]) do
+      not (ExID in [TptTokenKind.ptPrivate, TptTokenKind.ptProtected, TptTokenKind.ptPublished, TptTokenKind.ptPublic, TptTokenKind.ptAssembly]) do
     begin
       ClassField;
       SEMICOLON;
       ClassVisibility;
     end;
-    while TokenID in [TptTokenKind.ptClass, TptTokenKind.ptConstructor, TptTokenKind.ptDestructor, TptTokenKind.ptFunction,
-      TptTokenKind.ptProcedure, TptTokenKind.ptProperty{$IFDEF D8_NEWER}, TptTokenKind.ptSquareOpen, TptTokenKind.ptVar, TptTokenKind.ptConst{$ENDIF}] do
+    while TokenID in [TptTokenKind.ptClass, TptTokenKind.ptConstructor, TptTokenKind.ptDestructor, TptTokenKind.ptFunction, TptTokenKind.ptMethod,
+      TptTokenKind.ptProcedure, TptTokenKind.ptProperty, TptTokenKind.ptSquareOpen, TptTokenKind.ptVar, TptTokenKind.ptConst] do
     begin
       ClassMethodOrProperty;
     end;
-    {$IFDEF D8_NEWER}//JThurman 2004-03-22
-    {Nested types for D8}
     while TokenID = TptTokenKind.ptType do
       TypeSection;
     while TokenID = TptTokenKind.ptCase do
     begin
       VariantSection;
     end;
-    {$ENDIF}
     ClassVisibility;
   end;
 end;

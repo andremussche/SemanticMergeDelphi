@@ -105,6 +105,7 @@ type
     procedure ClassField; override;
     procedure ClassForward; override;
     procedure ClassFunctionHeading; override;
+    procedure ClassMethodMethodHeading; override;
     procedure ClassHeritage; override;
     procedure ClassMemberList; override;
     procedure ClassMethodDirective; override;
@@ -499,6 +500,15 @@ begin
   inherited;
   //ExitHandler('ClassFunctionHeading');
   ProcessItem_Next(FCurrentMethod, False {full line}, 'ClassFunctionHeading');
+  //for start, see FunctionMethodName
+end;
+
+procedure TPas2YamlParser.ClassMethodMethodHeading;
+begin
+  EnterHandler('ClassMethodHeading');
+  inherited;
+  //ExitHandler('ClassFunctionHeading');
+  ProcessItem_Next(FCurrentMethod, False {full line}, 'ClassMethodHeading');
   //for start, see FunctionMethodName
 end;
 
