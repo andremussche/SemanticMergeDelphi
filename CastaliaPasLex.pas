@@ -109,6 +109,7 @@ type
     function KeyComp(const aKey: String): Boolean;
     function Func9: TptTokenKind;
     function Func15: TptTokenKind;
+    function Func17: TptTokenKind;
     function Func19: TptTokenKind;
     function Func20: TptTokenKind;
 	  function Func21: TptTokenKind;
@@ -545,6 +546,7 @@ begin
     case I of
       9: fIdentFuncTable[I] := @Func9;
       15: fIdentFuncTable[I] := @Func15;
+      17: fIdentFuncTable[I] := @Func17;
 	    19: fIdentFuncTable[I] := @Func19;
       20: fIdentFuncTable[I] := @Func20;
       21: fIdentFuncTable[I] := @Func21;
@@ -642,10 +644,11 @@ begin
       9: fIdentFuncTable[I] := Func9;
       {$ENDIF}
       15: fIdentFuncTable[I] := Func15;
-	  19: fIdentFuncTable[I] := Func19;
+      17: fIdentFuncTable[I] := Func17;
+	    19: fIdentFuncTable[I] := Func19;
       20: fIdentFuncTable[I] := Func20;
       21: fIdentFuncTable[I] := Func21;
-	  23: fIdentFuncTable[I] := Func23;
+	    23: fIdentFuncTable[I] := Func23;
       25: fIdentFuncTable[I] := Func25;
       27: fIdentFuncTable[I] := Func27;
       28: fIdentFuncTable[I] := Func28;
@@ -657,13 +660,13 @@ begin
       36: fIdentFuncTable[I] := Func36;
       37: fIdentFuncTable[I] := Func37;
       38: fIdentFuncTable[I] := Func38;
-	  39: fIdentFuncTable[I] := Func39;
+	    39: fIdentFuncTable[I] := Func39;
       40: fIdentFuncTable[I] := Func40;
-	  41: fIdentFuncTable[I] := Func41;
-    {$IFDEF D8_NEWER} //JThurman 2004-03-2003
-    42: fIdentFuncTable[I] := Func42;
-    {$ENDIF}
-	  43: fIdentFuncTable[I] := Func43;
+	    41: fIdentFuncTable[I] := Func41;
+      {$IFDEF D8_NEWER} //JThurman 2004-03-2003
+      42: fIdentFuncTable[I] := Func42;
+      {$ENDIF}
+	    43: fIdentFuncTable[I] := Func43;
       44: fIdentFuncTable[I] := Func44;
       45: fIdentFuncTable[I] := Func45;
       46: fIdentFuncTable[I] := Func46;
@@ -675,12 +678,12 @@ begin
       56: fIdentFuncTable[I] := Func56;
       57: fIdentFuncTable[I] := Func57;
       58: fIdentFuncTable[I] := Func58;
-	  59: fIdentFuncTable[I] := Func59;
+	    59: fIdentFuncTable[I] := Func59;
       60: fIdentFuncTable[I] := Func60;
       61: fIdentFuncTable[I] := Func61;
-	  62: fIdentFuncTable[I] := Func62;
+	    62: fIdentFuncTable[I] := Func62;
       63: fIdentFuncTable[I] := Func63;
-	  64: fIdentFuncTable[I] := Func64;
+	    64: fIdentFuncTable[I] := Func64;
       65: fIdentFuncTable[I] := Func65;
       66: fIdentFuncTable[I] := Func66;
       69: fIdentFuncTable[I] := Func69;
@@ -696,8 +699,8 @@ begin
       79: fIdentFuncTable[I] := Func79;
       81: fIdentFuncTable[I] := Func81;
       84: fIdentFuncTable[I] := Func84;
-	  85: fIdentFuncTable[I] := Func85;
-	  86: fIdentFuncTable[I] := Func86;
+	    85: fIdentFuncTable[I] := Func85;
+	    86: fIdentFuncTable[I] := Func86;
       87: fIdentFuncTable[I] := Func87;
       88: fIdentFuncTable[I] := Func88;
       {$IFDEF D8_NEWER} //JThurman 2004-03-03
@@ -712,12 +715,12 @@ begin
       98: fIdentFuncTable[I] := Func98;
       99: fIdentFuncTable[I] := Func99;
       100: fIdentFuncTable[I] := Func100;
-	  101: fIdentFuncTable[I] := Func101;
+	    101: fIdentFuncTable[I] := Func101;
       102: fIdentFuncTable[I] := Func102;
       103: fIdentFuncTable[I] := Func103;
       104: fIdentFuncTable[I] := Func104;
       105: fIdentFuncTable[I] := Func105;
-	  106: fIdentFuncTable[I] := Func106;
+	    106: fIdentFuncTable[I] := Func106;
       107: fIdentFuncTable[I] := Func107;
       108: fIdentFuncTable[I] := Func108;
       112: fIdentFuncTable[I] := Func112;
@@ -726,11 +729,11 @@ begin
       126: fIdentFuncTable[I] := Func126;
       127: fIdentFuncTable[I] := Func127;
       128: fIdentFuncTable[I] := Func128;
-	  129: fIdentFuncTable[I] := Func129;
+	    129: fIdentFuncTable[I] := Func129;
       130: fIdentFuncTable[I] := Func130;
       132: fIdentFuncTable[I] := Func132;
       133: fIdentFuncTable[I] := Func133;
-	  136: fIdentFuncTable[I] := Func136;
+	    136: fIdentFuncTable[I] := Func136;
       141: fIdentFuncTable[I] := Func141;
       143: fIdentFuncTable[I] := Func143;
       166: fIdentFuncTable[I] := Func166;
@@ -796,40 +799,39 @@ end;
 
 function TmwBasePasLex.Func15: TptTokenKind;
 begin
-  result := TptTokenKind.ptIdentifier;
   if KeyComp('If') then result := TptTokenKind.ptIf;
+end;
+
+function TmwBasePasLex.Func17: TptTokenKind;
+begin
+  if KeyComp('Each') then result := TptTokenKind.ptEach;
 end;
 
 function TmwBasePasLex.Func19: TptTokenKind;
 begin
-  result := TptTokenKind.ptIdentifier;
   if KeyComp('Do') then result := TptTokenKind.ptDo else
     if KeyComp('And') then result := TptTokenKind.ptAnd;
 end;
 
 function TmwBasePasLex.Func20: TptTokenKind;
 begin
-  result := TptTokenKind.ptIdentifier;
   if KeyComp('As') then result := TptTokenKind.ptAs;
 end;
 
 function TmwBasePasLex.Func21: TptTokenKind;
 begin
-  Result := TptTokenKind.ptIdentifier;
   if KeyComp('Of') then Result := TptTokenKind.ptOf else
     if KeyComp('At') then fExID := TptTokenKind.ptAt;
 end;
 
 function TmwBasePasLex.Func23: TptTokenKind;
 begin
-  Result := TptTokenKind.ptIdentifier;
   if KeyComp('End') then Result := TptTokenKind.ptEnd else
     if KeyComp('In') then Result := TptTokenKind.ptIn;
 end;
 
 function TmwBasePasLex.Func25: TptTokenKind;
 begin 
-  Result := TptTokenKind.ptIdentifier;
   if KeyComp('Far') then fExID := TptTokenKind.ptFar; 
 end;
 

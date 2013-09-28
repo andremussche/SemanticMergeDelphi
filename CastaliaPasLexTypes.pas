@@ -45,6 +45,7 @@ type
   {$ELSE}
   TptTokenKind = (
   {$ENDIF}
+    ptIdentifier, //default value so it does not need to be set in each lookup method
     ptAbort, //JThurman 2004-11-8 (flow control routines)
     ptAbsolute,
     ptAbstract,
@@ -104,6 +105,7 @@ type
     ptDownto,
     ptDWORD,
     ptDynamic,
+    ptEach,
     ptElse,
     ptElseDirect,
     ptEnd,
@@ -134,7 +136,6 @@ type
   {$IFDEF D8_NEWER} //JThurman 2004-04-06
     ptHelper,
   {$ENDIF}
-    ptIdentifier,
     ptIf,
     ptIfDirect,
     ptIfEndDirect,
