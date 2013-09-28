@@ -5619,11 +5619,7 @@ begin
   end;
   while TokenID in [TptTokenKind.ptClass, TptTokenKind.ptConst, TptTokenKind.ptConstructor, TptTokenKind.ptDestructor, TptTokenKind.ptFunction,
     TptTokenKind.ptLabel, TptTokenKind.ptProcedure, TptTokenKind.ptResourcestring, TptTokenKind.ptThreadvar, TptTokenKind.ptType, TptTokenKind.ptVar,
-    TptTokenKind.ptExports
-    {$IFDEF D8_NEWER}//JThurman 2004-03-22
-    , TptTokenKind.ptSquareOpen
-    {$ENDIF}
-    ] do //ptResourceString added jdj
+    TptTokenKind.ptExports, TptTokenKind.ptSquareOpen, TptTokenKind.ptMethod] do //ptResourceString added jdj
   begin
     DeclarationSection;
   end;
