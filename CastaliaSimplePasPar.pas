@@ -505,6 +505,7 @@ type
     procedure VisibilityProtected; virtual;
     procedure VisibilityPublic; virtual;
     procedure VisibilityPublished; virtual;
+    procedure VisibilityAssembly; virtual;
     procedure VisibilityUnknown; virtual;
     procedure WhileStatement; virtual;
     procedure WithStatement; virtual;
@@ -4092,7 +4093,7 @@ begin
   if TokenID = TptTokenKind.ptStrict then
     Expected(TptTokenKind.ptStrict);
   {$ENDIF}
-  while ExID in [TptTokenKind.ptAutomated, TptTokenKind.ptPrivate, TptTokenKind.ptProtected, TptTokenKind.ptPublic, TptTokenKind.ptPublished] do
+  while ExID in [TptTokenKind.ptAutomated, TptTokenKind.ptPrivate, TptTokenKind.ptProtected, TptTokenKind.ptPublic, TptTokenKind.ptPublished, TptTokenKind.ptAssembly] do
   begin
     Lexer.InitAhead;
     case Lexer.AheadExID of
@@ -4118,6 +4119,10 @@ begin
         TptTokenKind.ptPublished:
           begin
             VisibilityPublished;
+          end;
+        TptTokenKind.ptAssembly:
+          begin
+            VisibilityAssembly;
           end;
       end;
     end;
@@ -4147,6 +4152,11 @@ end;
 procedure TmwSimplePasPar.VisibilityPublished;
 begin
   ExpectedEx(TptTokenKind.ptPublished);
+end;
+
+procedure TmwSimplePasPar.VisibilityAssembly;
+begin
+  ExpectedEx(TptTokenKind.ptAssembly);
 end;
 
 procedure TmwSimplePasPar.VisibilityUnknown;
