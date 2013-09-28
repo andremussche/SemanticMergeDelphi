@@ -1354,16 +1354,14 @@ end;
 
 procedure TmwSimplePasPar.UsedUnitName;
 begin
-  {$IFDEF D8_NEWER} //JThurman 2004-03-03
-  Expected(TptTokenKind.ptIdentifier);
+  Lexer.PreviousIdentifierText := Lexer.Token;
+  Expected(TptTokenKind.ptIdentifier); 
   while TokenID = TptTokenKind.ptPoint do
   begin
     NextToken;
-    Expected(TptTokenKind.ptIdentifier);
+    Lexer.PreviousIdentifierText := Lexer.PreviousIdentifierText + '.' + Lexer.Token;
+    Expected(TptTokenKind.ptIdentifier); 
   end;
-  {$ELSE}
-  Expected(ptIdentifier);
-  {$ENDIF}
 end;
 
 procedure TmwSimplePasPar.Block;

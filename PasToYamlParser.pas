@@ -2551,6 +2551,7 @@ begin
   itemyaml := ProcessItem_Before('used unit', True{exact pos}, 'UsedUnitName');
   FCurrentMethod := itemyaml;
   inherited;
+  itemyaml.name := Lexer.PreviousIdentifierText;
   ProcessItem_Next(itemyaml, True{exact pos}, 'UsedUnitName');
   //ExitHandler('UsedUnitName');
 end;
