@@ -41,7 +41,7 @@ type
   end;
 
   {$IFDEF OXYGENE}
-  TptTokenKind = public enum(
+  TptTokenKind = public  enum(
   {$ELSE}
   TptTokenKind = (
   {$ENDIF}
@@ -59,6 +59,7 @@ type
     ptAsciiChar,
     ptAsm,
     ptAssembler,
+    ptAssembly,
     ptAssign,
     ptAt,
     ptAutomated,

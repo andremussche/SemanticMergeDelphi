@@ -1237,7 +1237,8 @@ begin
   Result := TptTokenKind.ptIdentifier;
   if KeyComp('ByteBool') then fExID := TptTokenKind.ptByteBool else
     if KeyComp('Override') then fExID := TptTokenKind.ptOverride else
-      if KeyComp('Published') then fExID := TptTokenKind.ptPublished;
+      if KeyComp('Published') then fExID := TptTokenKind.ptPublished else
+         if KeyComp('Assembly') then fExID := TptTokenKind.ptAssembly;
 end;
 
 function TmwBasePasLex.Func97: TptTokenKind;
