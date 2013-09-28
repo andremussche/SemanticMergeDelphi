@@ -1252,27 +1252,24 @@ end;
 
 function TmwBasePasLex.Func98: TptTokenKind;
 begin
-  Result := TptTokenKind.ptIdentifier;
   if KeyComp('Export') then fExID := TptTokenKind.ptExport else
     if KeyComp('Nodefault') then fExID := TptTokenKind.ptNodefault;
 end;
 
 function TmwBasePasLex.Func99: TptTokenKind;
 begin
-   Result := TptTokenKind.ptIdentifier;
   if KeyComp('External') then fExID := TptTokenKind.ptExternal;
 end;
 
 function TmwBasePasLex.Func100: TptTokenKind;
 begin
-  Result := TptTokenKind.ptIdentifier;
-  if KeyComp('Automated') then fExID := TptTokenKind.ptAutomated else
-    if KeyComp('Smallint') then fExID := TptTokenKind.ptSmallint;
+  if KeyComp('Finalizer') then result := TptTokenKind.ptFinalizer else
+    if KeyComp('Automated') then fExID := TptTokenKind.ptAutomated else
+      if KeyComp('Smallint') then fExID := TptTokenKind.ptSmallint;
 end;
 
 function TmwBasePasLex.Func101: TptTokenKind;
 begin
-  Result := TptTokenKind.ptIdentifier;
   if KeyComp('Register') then fExID := TptTokenKind.ptRegister
   else if KeyComp('Platform') then fExID := TptTokenKind.ptPlatform // DR 2001-10-20
   else if KeyComp('Continue') then fExID := TptTokenKind.ptContinue;

@@ -125,6 +125,7 @@ type
   {$ENDIF}
     ptFinalization,
     ptFinally,
+    ptFinalizer,
     ptFloat,
     ptFor,
     ptForward,
