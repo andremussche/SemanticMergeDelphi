@@ -1455,11 +1455,13 @@ end;
 
 procedure TmwSimplePasPar.UnitName;
 begin
-  Expected(TptTokenKind.ptIdentifier);
-  while Lexer.TokenID = TptTokenKind.ptPoint do
+  Lexer.PreviousIdentifierText := Lexer.Token;
+  Expected(TptTokenKind.ptIdentifier); 
+  while TokenID = TptTokenKind.ptPoint do
   begin
     NextToken;
-    Expected(TptTokenKind.ptIdentifier);
+    Lexer.PreviousIdentifierText := Lexer.PreviousIdentifierText + '.' + Lexer.Token;
+    Expected(TptTokenKind.ptIdentifier); 
   end;
 end;
 
@@ -4741,6 +4743,7 @@ procedure TmwSimplePasPar.TypeName;
 begin
   Lexer.PreviousIdentifierText := Lexer.Token;
   Expected(TptTokenKind.ptIdentifier);
+
   if TokenID = TptTokenKind.ptLower then
     TypeParams;
 end;
