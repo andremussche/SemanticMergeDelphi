@@ -130,8 +130,8 @@ type
     procedure ConstantValue; override;
     procedure ConstantValueTyped; override;
     procedure ConstParameter; override;
-    procedure ConstructorHeading; override;
-    procedure ConstructorName; override;
+    function ConstructorHeading: String; override;
+    function ConstructorName: String; override;
     procedure ConstSection; override;
     procedure ContainsClause; override;
     procedure ContainsExpression; override;
@@ -307,7 +307,7 @@ type
     procedure TypeDeclaration; override;
     procedure TypeId; override;
     procedure TypeKind; override;
-    procedure TypeName; override;
+    function TypeName: String; override;
     //generics
     procedure TypeArgs; override;
     procedure TypeParams; override;
@@ -320,8 +320,8 @@ type
     procedure TypeSection; override;
     procedure UnitFile; override;
     procedure UnitId; override;
-    procedure UnitName; override;
-    procedure UsedUnitName; override;
+    function UnitName: String; override;
+    function UsedUnitName: String; override;
     procedure UsedUnitsList; override;
     procedure UsesClause; override;
     procedure VarAbsolute; override;
@@ -592,7 +592,7 @@ begin
 
   inherited;
 
-  parentyaml.name := Lexer.PreviousIdentifierText;
+  parentyaml.name := FCurrentType;
   if FPrevClassVisibility <> nil then
     ProcessParent_Next(FPrevClassVisibility, False, 'end of Visibility');
   FPrevClassVisibility := nil;
@@ -734,17 +734,20 @@ begin
   ExitHandler('ConstraintList');
 end;
 
-procedure TPas2YamlParser.ConstructorHeading;
+function TPas2YamlParser.ConstructorHeading: String;
+var itemyaml: TSemanticItemYaml;
 begin
-  EnterHandler('ConstructorHeading');
-  inherited;
-  ExitHandler('ConstructorHeading');
+  itemyaml := ProcessItem_Before('constructor', True{exact pos}, 'Constructor');
+  FCurrentMethod := itemyaml;
+  result := inherited;
+  itemyaml.name := result;
+  ProcessItem_Next(itemyaml, True{exact pos}, 'Constructor');
 end;
 
-procedure TPas2YamlParser.ConstructorName;
+function TPas2YamlParser.ConstructorName: String;
 begin
   EnterHandler('ConstructorName');
-  inherited;
+  result := inherited;
   ExitHandler('ConstructorName');
 end;
 
@@ -2352,7 +2355,6 @@ end;
 procedure TPas2YamlParser.TypeDeclaration;
 begin
   EnterHandler('TypeDeclaration');
-  FCurrentType := Lexer.Token;
   inherited;
   ExitHandler('TypeDeclaration');
 end;
@@ -2371,10 +2373,11 @@ begin
   ExitHandler('TypeKind');
 end;
 
-procedure TPas2YamlParser.TypeName;
+function TPas2YamlParser.TypeName: String;
 begin
   EnterHandler('TypeName');
-  inherited;
+  result := inherited;
+  FCurrentType := result;
   ExitHandler('TypeName');
 end;
 
@@ -2470,10 +2473,10 @@ begin
   ExitHandler('UnitId');
 end;
 
-procedure TPas2YamlParser.UnitName;
+function TPas2YamlParser.UnitName: String;
 begin
   EnterHandler('UnitName');
-  inherited;
+  result := inherited;
   ExitHandler('UnitName');
 end;
 
@@ -2555,13 +2558,13 @@ begin
     FPrevItem := aNode as TSemanticItemYaml
 end;
 
-procedure TPas2YamlParser.UsedUnitName;
+function TPas2YamlParser.UsedUnitName: String;
 var itemyaml: TSemanticItemYaml;
 begin
   itemyaml := ProcessItem_Before('used unit', True{exact pos}, 'UsedUnitName');
   FCurrentMethod := itemyaml;
-  inherited;
-  itemyaml.name := Lexer.PreviousIdentifierText;
+  result := inherited;
+  itemyaml.name := result;
   ProcessItem_Next(itemyaml, True{exact pos}, 'UsedUnitName');
   //ExitHandler('UsedUnitName');
 end;

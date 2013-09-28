@@ -83,7 +83,6 @@ type
     fProcTable: array[#0..#255] of procedure of object;
     fIdentFuncTable: array[0..191] of function: TptTokenKind of object;
     {$ENDIF}  
-    fPreviousIdentifierText : String;
     fDefines: TStrings;
     RunAhead: Integer;
     TempRun: Integer;   
@@ -375,7 +374,6 @@ type
 	  property AsmCode : Boolean read fAsmCode write fAsmCode; // DR 2002-01-14
     property DirectiveParamOrigin: PChar read fDirectiveParamOrigin;
     property UseDefines: Boolean read FUseDefines write FUseDefines;
-    property PreviousIdentifierText: String read fPreviousIdentifierText write fPreviousIdentifierText;
     {$IFDEF OXYGENE}
     class constructor; 
     {$ENDIF}

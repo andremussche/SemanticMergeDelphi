@@ -294,8 +294,8 @@ type
     procedure ConstantValue; virtual;
     procedure ConstantValueTyped; virtual;
     procedure ConstParameter; virtual;
-    procedure ConstructorHeading; virtual;
-    procedure ConstructorName; virtual;
+    function ConstructorHeading: String; virtual;
+    function ConstructorName: String; virtual;
     procedure ConstSection; virtual;
     procedure ContainsClause; virtual;
     procedure ContainsExpression; virtual;
@@ -471,7 +471,7 @@ type
     procedure TypeDeclaration; virtual;
     procedure TypeId; virtual;
     procedure TypeKind; virtual;
-    procedure TypeName; virtual;
+    function TypeName: String; virtual;
     //generics
     procedure TypeArgs; virtual;
     procedure TypeParams; virtual;
@@ -484,8 +484,8 @@ type
     procedure TypeSection; virtual;
     procedure UnitFile; virtual;
     procedure UnitId; virtual;
-    procedure UnitName; virtual;
-    procedure UsedUnitName; virtual;
+    function UnitName: String; virtual;
+    function UsedUnitName: String; virtual;
     procedure UsedUnitsList; virtual;
     procedure UsesClause; virtual;
     procedure VarAbsolute; virtual;
@@ -1354,14 +1354,14 @@ begin
   end;
 end;
 
-procedure TmwSimplePasPar.UsedUnitName;
+function TmwSimplePasPar.UsedUnitName: String;
 begin
-  Lexer.PreviousIdentifierText := Lexer.Token;
+  result := Lexer.Token;
   Expected(TptTokenKind.ptIdentifier); 
   while TokenID = TptTokenKind.ptPoint do
   begin
     NextToken;
-    Lexer.PreviousIdentifierText := Lexer.PreviousIdentifierText + '.' + Lexer.Token;
+    result := result + '.' + Lexer.Token;
     Expected(TptTokenKind.ptIdentifier); 
   end;
 end;
@@ -1455,14 +1455,14 @@ begin
   Expected(TptTokenKind.ptIdentifier);
 end;
 
-procedure TmwSimplePasPar.UnitName;
+function TmwSimplePasPar.UnitName: String;
 begin
-  Lexer.PreviousIdentifierText := Lexer.Token;
+  result := Lexer.Token;
   Expected(TptTokenKind.ptIdentifier); 
   while TokenID = TptTokenKind.ptPoint do
   begin
     NextToken;
-    Lexer.PreviousIdentifierText := Lexer.PreviousIdentifierText + '.' + Lexer.Token;
+    result := result + '.' + Lexer.Token;
     Expected(TptTokenKind.ptIdentifier); 
   end;
 end;
@@ -1891,10 +1891,10 @@ begin
   end;
 end;
 
-procedure TmwSimplePasPar.ConstructorHeading;
+function TmwSimplePasPar.ConstructorHeading: String;
 begin
   Expected(TptTokenKind.ptConstructor);
-  ConstructorName;
+  if not (TokenID in [TptTokenKind.ptRoundOpen, TptTokenKind.ptSemiColon]) then result := ConstructorName else result := 'constructor';
   if TokenID = TptTokenKind.ptRoundOpen then
   begin
     FormalParameterList;
@@ -1903,8 +1903,9 @@ begin
   ClassMethodDirective;
 end;
 
-procedure TmwSimplePasPar.ConstructorName;
+function TmwSimplePasPar.ConstructorName: String;
 begin
+  result := Lexer.Token;
   Expected(TptTokenKind.ptIdentifier);
 end;
 
@@ -4782,11 +4783,16 @@ begin
     end;
 end;
 
-procedure TmwSimplePasPar.TypeName;
+function TmwSimplePasPar.TypeName: String;
 begin
-  Lexer.PreviousIdentifierText := Lexer.Token;
+  result := Lexer.Token;
   Expected(TptTokenKind.ptIdentifier);
-
+  while TokenID = TptTokenKind.ptPoint do
+  begin
+    NextToken;
+    result := result + '.' + Lexer.Token;
+    Expected(TptTokenKind.ptIdentifier); 
+  end;
   if TokenID = TptTokenKind.ptLower then
     TypeParams;
 end;
