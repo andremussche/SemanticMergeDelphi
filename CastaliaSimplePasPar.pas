@@ -562,7 +562,6 @@ type
     property LastNoJunkLen: Integer read fLastNoJunkLen;
 
     property UseDefines: Boolean read FUseDefines write FUseDefines;
-  published
   end;
 
 implementation
@@ -867,9 +866,9 @@ begin
 end;
 
 procedure TmwSimplePasPar.HandlePtElseIfDirect(Sender: TmwBasePasLex);
-var
-  Param: String;
-  Def: String;
+//var
+//  Param: String;
+//  Def: String;
 begin
 //  if FUseDefines then
 //  begin
@@ -935,9 +934,9 @@ begin
 end;
 
 procedure TmwSimplePasPar.HandlePtIfDirect(Sender: TmwBasePasLex);
-var
-  Def: String;
-  Param: String;
+//var
+//  Def: String;
+//  Param: String;
 begin
 //  Param := Sender.DirectiveParam;
 //  if FUseDefines then

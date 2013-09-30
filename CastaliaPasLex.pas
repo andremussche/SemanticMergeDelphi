@@ -496,6 +496,7 @@ begin
   FDefineStack := ALexer.FDefineStack;
 
   Frame := nil;
+  LastFrame := nil;
   SourceFrame := ALexer.FTopDefineRec;
   while SourceFrame <> nil do
   begin
@@ -797,40 +798,47 @@ end;
 
 function TmwBasePasLex.Func15: TptTokenKind;
 begin
+  result := TptTokenKind.ptIdentifier;
   if KeyComp('If') then result := TptTokenKind.ptIf;
 end;
 
 function TmwBasePasLex.Func17: TptTokenKind;
 begin
+  result := TptTokenKind.ptIdentifier;
   if KeyComp('Each') then result := TptTokenKind.ptEach;
 end;
 
 function TmwBasePasLex.Func19: TptTokenKind;
 begin
+  result := TptTokenKind.ptIdentifier;
   if KeyComp('Do') then result := TptTokenKind.ptDo else
     if KeyComp('And') then result := TptTokenKind.ptAnd;
 end;
 
 function TmwBasePasLex.Func20: TptTokenKind;
 begin
+  result := TptTokenKind.ptIdentifier;
   if KeyComp('As') then result := TptTokenKind.ptAs;
 end;
 
 function TmwBasePasLex.Func21: TptTokenKind;
 begin
+  result := TptTokenKind.ptIdentifier;
   if KeyComp('Of') then Result := TptTokenKind.ptOf else
     if KeyComp('At') then fExID := TptTokenKind.ptAt;
 end;
 
 function TmwBasePasLex.Func23: TptTokenKind;
 begin
+  result := TptTokenKind.ptIdentifier;
   if KeyComp('End') then Result := TptTokenKind.ptEnd else
     if KeyComp('In') then Result := TptTokenKind.ptIn;
 end;
 
 function TmwBasePasLex.Func25: TptTokenKind;
 begin 
-  if KeyComp('Far') then fExID := TptTokenKind.ptFar; 
+  result := TptTokenKind.ptIdentifier;
+  if KeyComp('Far') then fExID := TptTokenKind.ptFar;
 end;
 
 function TmwBasePasLex.Func27: TptTokenKind;
@@ -1250,17 +1258,20 @@ end;
 
 function TmwBasePasLex.Func98: TptTokenKind;
 begin
+  result := TptTokenKind.ptIdentifier;
   if KeyComp('Export') then fExID := TptTokenKind.ptExport else
     if KeyComp('Nodefault') then fExID := TptTokenKind.ptNodefault;
 end;
 
 function TmwBasePasLex.Func99: TptTokenKind;
 begin
+  result := TptTokenKind.ptIdentifier;
   if KeyComp('External') then fExID := TptTokenKind.ptExternal;
 end;
 
 function TmwBasePasLex.Func100: TptTokenKind;
 begin
+  result := TptTokenKind.ptIdentifier;
   if KeyComp('Finalizer') then result := TptTokenKind.ptFinalizer else
     if KeyComp('Automated') then fExID := TptTokenKind.ptAutomated else
       if KeyComp('Smallint') then fExID := TptTokenKind.ptSmallint;
@@ -1268,6 +1279,7 @@ end;
 
 function TmwBasePasLex.Func101: TptTokenKind;
 begin
+  result := TptTokenKind.ptIdentifier;
   if KeyComp('Register') then fExID := TptTokenKind.ptRegister
   else if KeyComp('Platform') then fExID := TptTokenKind.ptPlatform // DR 2001-10-20
   else if KeyComp('Continue') then fExID := TptTokenKind.ptContinue;
@@ -1617,10 +1629,12 @@ begin
   if fOrigin[Run] = '$' then
   begin
     inc(Run);
-    while fOrigin[Run] in ['0'..'9', 'A'..'F', 'a'..'f'] do inc(Run);
+    //while fOrigin[Run] in ['0'..'9', 'A'..'F', 'a'..'f'] do inc(Run);
+    while CharInSet(fOrigin[Run], ['0'..'9', 'A'..'F', 'a'..'f']) do inc(Run);
   end else
   begin
-    while fOrigin[Run] in ['0'..'9'] do
+    //while fOrigin[Run] in ['0'..'9'] do
+    while CharInSet(fOrigin[Run], ['0'..'9']) do
       inc(Run);
   end;
 end;
@@ -1942,7 +1956,7 @@ procedure TmwBasePasLex.IntegerProc;
 begin
   inc(Run);
   FTokenID := TptTokenKind.ptIntegerConst;
-  while fOrigin[Run] in ['0'..'9', 'A'..'F', 'a'..'f'] do
+  while CharInSet(fOrigin[Run], ['0'..'9', 'A'..'F', 'a'..'f']) do
     inc(Run);
 end;
 
@@ -2007,7 +2021,7 @@ procedure TmwBasePasLex.NumberProc;
 begin
   inc(Run);
   FTokenID := TptTokenKind.ptIntegerConst;
-  while fOrigin[Run] in ['0'..'9', '.', 'e', 'E'] do
+  while CharInSet(fOrigin[Run], ['0'..'9', '.', 'e', 'E']) do
   begin
     case fOrigin[Run] of
       '.':
@@ -2032,7 +2046,7 @@ begin
   
   //This is a wierd Pascal construct that rarely appears, but needs to be 
   //supported. ^M is a valid char reference (#13, in this case)
-  if fOrigin[Run] in ['a'..'z','A'..'Z'] then
+  if CharInSet(fOrigin[Run], ['a'..'z','A'..'Z']) then
   begin
     inc(Run);
     FTokenID := TptTokenKind.ptAsciiChar;
@@ -2269,7 +2283,7 @@ procedure TmwBasePasLex.SpaceProc;
 begin
   inc(Run);
   FTokenID := TptTokenKind.ptSpace;
-  while fOrigin[Run] in [#1..#9, #11, #12, #14..#32] do
+  while CharInSet(fOrigin[Run], [#1..#9, #11, #12, #14..#32]) do
     inc(Run);
 end;
 
@@ -2415,7 +2429,7 @@ begin
   if fTokenPos = 0 then exit;
   RunBack := fTokenPos;
   dec(RunBack);
-  while fOrigin[RunBack] in [#1..#9, #11, #12, #14..#32] do
+  while CharInSet(fOrigin[RunBack], [#1..#9, #11, #12, #14..#32]) do
     dec(RunBack);
   if RunBack = 0 then exit;
   case fOrigin[RunBack] of
@@ -2479,7 +2493,7 @@ begin
     18:
       if KeyComp('R') then
       begin
-        if not (fOrigin[Run] in ['+', '-']) then
+        if not CharInSet(fOrigin[Run], ['+', '-']) then
           Result := TptTokenKind.ptResourceDirect else Result := TptTokenKind.ptCompDirect;
       end else Result := TptTokenKind.ptCompDirect;
     30:
@@ -2551,12 +2565,12 @@ begin
   end;
   while IsIdentifiers(fOrigin[TempRun]) do
     inc(TempRun);
-  while fOrigin[TempRun] in ['+', ',', '-'] do
+  while CharInSet(fOrigin[TempRun], ['+', ',', '-']) do
   begin
     inc(TempRun);
     while IsIdentifiers(fOrigin[TempRun]) do
       inc(TempRun);
-    if (fOrigin[TempRun - 1] in ['+', ',', '-']) and (fOrigin[TempRun] = ' ')
+    if CharInSet(fOrigin[TempRun - 1], ['+', ',', '-']) and (fOrigin[TempRun] = ' ')
       then inc(TempRun);
   end;
   if fOrigin[TempRun] = ' ' then inc(TempRun);
@@ -3001,7 +3015,7 @@ begin
 	  '\':
 		begin
 		  inc( Run );
-		  if fOrigin[Run] in [#32..#255] then inc( Run );
+		  if CharInSet(fOrigin[Run], [#32..#255]) then inc( Run );
 		end;
 	end;
   until fOrigin[Run] = '"';
@@ -3014,7 +3028,7 @@ procedure TmwBasePasLex.AmpersandOpProc;
 begin
   FTokenID := TptTokenKind.ptAmpersand;
   inc(Run);
-  while fOrigin[Run] in ['a'..'z', 'A'..'Z','0'..'9'] do
+  while CharInSet(fOrigin[Run], ['a'..'z', 'A'..'Z','0'..'9']) do
     inc(Run);
   FTokenID := TptTokenKind.ptIdentifier;
 end;
