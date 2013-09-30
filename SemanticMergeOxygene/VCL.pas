@@ -17,7 +17,7 @@ Uses
 
   method LowerCase(aString: String): String;
 
-  method CharInSet(C: Char; CharSet: array of Char): Boolean;
+  method CharInSet(C: Char; CharSet: set of Char): Boolean;
 
   method BoolToStr(aBoolean, UseBoolStrs: Boolean): String;
 
@@ -89,12 +89,9 @@ begin
   exit aString.ToUpper();
 end;
 
-method CharInSet(C: Char; CharSet: array of Char): Boolean;
+method CharInSet(C: Char; CharSet: set of Char): Boolean;
 begin
-  for each ch in CharSet do
-  begin
-    if ch = C then exit true;
-  end;
+  result := C in CharSet;
 end;
 
 method LowerCase(aString: String): String;
